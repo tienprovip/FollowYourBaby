@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx create-expo-app@latest . --template default --yes)",
+      "Bash(npx create-expo-app@latest ../FYB_temp --template default --yes)"
+    ]
+  }
+}

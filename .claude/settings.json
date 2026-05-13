@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install*)",
+      "Bash(npm run *)",
+      "Bash(npx expo *)",
+      "Bash(npx tsc*)",
+      "Bash(npx prettier *)",
+      "Bash(npx supabase *)",
+      "Bash(supabase *)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git branch*)",
+      "Bash(git checkout *)",
+      "Bash(ls*)",
+      "Bash(dir*)"
+    ],
+    "deny": ["Bash(rm -rf *)", "Bash(supabase db reset)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -command \"$raw = [Console]::In.ReadToEnd(); $d = $raw | ConvertFrom-Json; $fp = $d.tool_input.file_path; if ($fp -and ($fp -match '\\.(ts|tsx|js|jsx|json|css|md)$')) { npx prettier --write $fp 2>&1 | Out-Null }\""
+          },
+          {
+            "type": "command",
+            "command": "npx tsc --noEmit 2>&1 | tail -10"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -WindowStyle Hidden -File \"e:\\FollowYourBaby\\.claude\\notify.ps1\""
+          }
+        ]
+      }
+    ]
+  }
+}
