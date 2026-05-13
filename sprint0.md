@@ -173,7 +173,7 @@ Xây dựng bộ component dùng chung để các feature agent import thay vì 
 
 ## Những gì CẦN làm trước khi chạy app
 
-1. **Copy `.env.example` → `.env.local`** và điền:
+1. **Copy `.env.example` → `.env`** và điền:
    ```
    EXPO_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
    EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-key>

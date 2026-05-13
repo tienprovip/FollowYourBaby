@@ -448,8 +448,8 @@ cd FollowYourBaby
 npm install
 
 # Tạo file env
-cp .env.example .env.local
-# Điền các biến bên dưới vào .env.local
+cp .env.example .env
+# Điền các biến bên dưới vào .env
 
 # Chạy app
 npx expo start
@@ -485,7 +485,7 @@ supabase db reset
 supabase gen types typescript --local > types/database.ts
 
 # Deploy Edge Functions lên local
-supabase functions serve ai-chat --env-file .env.local
+supabase functions serve ai-chat --env-file .env
 ```
 
 ### Chạy Edge Functions production

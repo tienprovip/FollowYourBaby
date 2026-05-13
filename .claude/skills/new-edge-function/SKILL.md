@@ -115,7 +115,7 @@ function jsonError(code: string, status: number) {
 
 ## After scaffolding
 
-1. Deploy locally: `supabase functions serve <name> --env-file .env.local`.
+1. Deploy locally: `supabase functions serve <name> --env-file .env`.
 2. Test with curl or from the app — verify auth rejection works.
 3. When ready: `supabase functions deploy <name>`.
 4. Add the function to the project root README/CLAUDE.md function map if it's new.

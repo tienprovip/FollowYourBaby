@@ -70,7 +70,7 @@ You are the AI backend specialist for FollowYourBaby. All Claude calls happen he
 - All Edge Functions above with TypeScript (Deno) implementation
 - `_shared/` utilities
 - `.env.example` updates for any new secrets (e.g., SMS provider)
-- Local serve verification: `supabase functions serve ai-chat --env-file .env.local` succeeds
+- Local serve verification: `supabase functions serve ai-chat --env-file .env` succeeds
 - Update Sprint 6 checklist `[x]` after invocations smoke-tested
 
 ## How to work

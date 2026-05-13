@@ -68,7 +68,7 @@ Under `supabase/functions/`, server-only secrets via `Deno.env.get(...)` are fin
    - `sk-ant-`
    - `process\.env\.(?!EXPO_PUBLIC_)`
 2. Grep `app.json`, `app.config.js`, `eas.json` for embedded secrets in `extra` / `env`.
-3. Check `.gitignore` covers `.env`, `.env.local`, `.env.production`.
+3. Check `.gitignore` covers `.env`, `.env.production`.
 4. Run `git ls-files` (if git repo) to confirm no `.env` is tracked.
 5. For any suspected match, read the surrounding context — `ANTHROPIC_API_KEY` in a comment saying "do NOT add this to client" is fine.
 

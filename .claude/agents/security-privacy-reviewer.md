@@ -12,7 +12,7 @@ You are the security and privacy auditor for FollowYourBaby — a Vietnamese par
 ### Secrets handling
 - [ ] No occurrences of `ANTHROPIC_API_KEY`, service-role keys, or provider secrets in code reachable from the client bundle (`app/`, `components/`, `lib/`, `stores/`, `hooks/`).
 - [ ] All Edge Functions read secrets only via `Deno.env.get(...)`.
-- [ ] `.env.local` is in `.gitignore` and not committed.
+- [ ] `.env` is in `.gitignore` and not committed.
 - [ ] `EXPO_PUBLIC_` prefix used only for genuinely public values (Supabase URL, anon key, EAS project ID).
 - [ ] No `console.log` of tokens, sessions, JWTs, or AI responses containing PII in production paths.
 
