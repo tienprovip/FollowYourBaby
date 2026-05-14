@@ -266,8 +266,8 @@ This SRS organizes features into two phases:
 
 > Cập nhật trạng thái khi hoàn thành: `[ ]` → `[x]`. Giữ checklist này đồng bộ với tiến độ thực tế để AI và dev mới nắm được phase hiện tại.
 
-- [ ] Sprint 1: Thiết lập Expo + Supabase, đăng ký email, đăng nhập, đăng xuất
-- [ ] Sprint 1: Xây onboarding chọn hành trình và thu thập hồ sơ người dùng
+- [x] Sprint 1: Thiết lập Expo + Supabase, đăng ký email, đăng nhập, đăng xuất
+- [x] Sprint 1: Xây onboarding chọn hành trình và thu thập hồ sơ người dùng
 - [ ] Sprint 2: Quản lý profile người dùng, nhiều bé, nhiều thai kỳ
 - [ ] Sprint 2: Chia sẻ quyền chăm sóc và phân quyền
 - [ ] Sprint 3: Tracking cơ bản cho mẹ bầu: cân nặng, thai máy, triệu chứng

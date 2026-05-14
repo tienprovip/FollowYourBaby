@@ -11,6 +11,8 @@ export interface UserProfile {
   avatarUrl: string | null;
   role: import('@/lib/constants').UserRole;
   journey: import('@/lib/constants').Journey;
+  /** Set to true once the user completes the onboarding flow */
+  onboardingCompleted: boolean;
   createdAt: string;
   updatedAt: string;
 }
