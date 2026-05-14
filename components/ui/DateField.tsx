@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import {
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
@@ -17,12 +25,188 @@ export interface DateFieldProps {
   className?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function formatDate(date: Date): string {
   const d = date.getDate().toString().padStart(2, '0');
   const m = (date.getMonth() + 1).toString().padStart(2, '0');
   const y = date.getFullYear();
   return `${d}/${m}/${y}`;
 }
+
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+const MONTH_LABELS = [
+  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+  'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+  'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+];
+
+// ---------------------------------------------------------------------------
+// Wheel column
+// ---------------------------------------------------------------------------
+
+const ITEM_H = 46;
+const VISIBLE = 5;
+const PAD = ITEM_H * Math.floor(VISIBLE / 2);
+
+interface WheelProps {
+  items: string[];
+  selectedIndex: number;
+  onChange: (index: number) => void;
+  flex?: number;
+}
+
+function Wheel({ items, selectedIndex, onChange, flex = 1 }: WheelProps) {
+  const ref = useRef<ScrollView>(null);
+
+  useLayoutEffect(() => {
+    ref.current?.scrollTo({ y: selectedIndex * ITEM_H, animated: false });
+  }, []);
+
+  function handleScrollEnd(e: { nativeEvent: { contentOffset: { y: number } } }) {
+    const raw = Math.round(e.nativeEvent.contentOffset.y / ITEM_H);
+    const clamped = Math.max(0, Math.min(items.length - 1, raw));
+    onChange(clamped);
+  }
+
+  return (
+    <View style={{ flex, height: ITEM_H * VISIBLE }}>
+      {/* center-row highlight */}
+      <View style={[styles.wheelHighlight, { top: PAD }]} pointerEvents="none" />
+      <ScrollView
+        ref={ref}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={ITEM_H}
+        decelerationRate="fast"
+        onMomentumScrollEnd={handleScrollEnd}
+        contentContainerStyle={{ paddingVertical: PAD }}
+      >
+        {items.map((label, i) => (
+          <View key={i} style={styles.wheelItem}>
+            <Text
+              style={[
+                styles.wheelText,
+                i === selectedIndex && styles.wheelTextSelected,
+              ]}
+            >
+              {label}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// iOS wheel date picker sheet
+// ---------------------------------------------------------------------------
+
+interface WheelSheetProps {
+  value: Date;
+  onChange: (d: Date) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+  label?: string;
+  minimumDate?: Date;
+  maximumDate?: Date;
+}
+
+function WheelSheet({
+  value,
+  onChange,
+  onCancel,
+  onConfirm,
+  label,
+  minimumDate,
+  maximumDate,
+}: WheelSheetProps) {
+  const insets = useSafeAreaInsets();
+
+  const minYear = minimumDate?.getFullYear() ?? new Date().getFullYear();
+  const maxYear = maximumDate?.getFullYear() ?? new Date().getFullYear() + 5;
+  const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) =>
+    String(minYear + i),
+  );
+
+  const [yearIdx, setYearIdx] = useState(
+    Math.max(0, value.getFullYear() - minYear),
+  );
+  const [monthIdx, setMonthIdx] = useState(value.getMonth()); // 0-based
+  const [dayIdx, setDayIdx] = useState(value.getDate() - 1); // 0-based
+
+  const currentYear = minYear + yearIdx;
+  const currentMonth = monthIdx + 1; // 1-based for daysInMonth
+  const totalDays = daysInMonth(currentYear, currentMonth);
+  const days = Array.from({ length: totalDays }, (_, i) =>
+    String(i + 1).padStart(2, '0'),
+  );
+  const clampedDayIdx = Math.min(dayIdx, totalDays - 1);
+
+  function handleYearChange(idx: number) {
+    setYearIdx(idx);
+    const d = new Date(minYear + idx, monthIdx, Math.min(clampedDayIdx + 1, daysInMonth(minYear + idx, monthIdx + 1)));
+    onChange(d);
+  }
+
+  function handleMonthChange(idx: number) {
+    setMonthIdx(idx);
+    const d = new Date(currentYear, idx, Math.min(clampedDayIdx + 1, daysInMonth(currentYear, idx + 1)));
+    onChange(d);
+  }
+
+  function handleDayChange(idx: number) {
+    setDayIdx(idx);
+    const d = new Date(currentYear, monthIdx, idx + 1);
+    onChange(d);
+  }
+
+  return (
+    <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      {/* Toolbar */}
+      <View style={styles.toolbar}>
+        <Pressable onPress={onCancel} hitSlop={12}>
+          <Text style={styles.cancelBtn}>Hủy</Text>
+        </Pressable>
+        <Text style={styles.titleText}>{label ?? 'Chọn ngày'}</Text>
+        <Pressable onPress={onConfirm} hitSlop={12}>
+          <Text style={styles.confirmBtn}>Xong</Text>
+        </Pressable>
+      </View>
+
+      {/* Wheels */}
+      <View style={styles.wheels}>
+        <Wheel
+          items={days}
+          selectedIndex={clampedDayIdx}
+          onChange={handleDayChange}
+          flex={1}
+        />
+        <Wheel
+          items={MONTH_LABELS}
+          selectedIndex={monthIdx}
+          onChange={handleMonthChange}
+          flex={2}
+        />
+        <Wheel
+          items={years}
+          selectedIndex={yearIdx}
+          onChange={handleYearChange}
+          flex={1}
+        />
+      </View>
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// DateField
+// ---------------------------------------------------------------------------
 
 function DateField({
   value,
@@ -36,8 +220,6 @@ function DateField({
 }: DateFieldProps) {
   const [show, setShow] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(value ?? new Date());
-  const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
 
   const hasError = Boolean(error);
   const isIOS = Platform.OS === 'ios';
@@ -49,14 +231,7 @@ function DateField({
 
   function handleAndroidChange(event: DateTimePickerEvent, selected?: Date) {
     setShow(false);
-    if (event.type === 'set' && selected) {
-      onChange?.(selected);
-    }
-  }
-
-  // iOS inline: onChange fires each time user taps a date
-  function handleIOSChange(_event: DateTimePickerEvent, selected?: Date) {
-    if (selected) setTempDate(selected);
+    if (event.type === 'set' && selected) onChange?.(selected);
   }
 
   function confirmIOS() {
@@ -102,7 +277,7 @@ function DateField({
         </Text>
       )}
 
-      {/* Android: inline native dialog */}
+      {/* Android native dialog */}
       {!isIOS && show && (
         <DateTimePicker
           value={value ?? new Date()}
@@ -114,8 +289,7 @@ function DateField({
         />
       )}
 
-      {/* iOS: bottom sheet with inline calendar.
-          display="inline" renders correctly inside Modal (display="spinner" does not). */}
+      {/* iOS custom wheel picker — avoids UICalendarView internal padding issues */}
       {isIOS && (
         <Modal
           transparent
@@ -125,37 +299,25 @@ function DateField({
         >
           <View style={styles.overlay}>
             <Pressable style={StyleSheet.absoluteFillObject} onPress={cancelIOS} />
-
-            <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-              {/* Toolbar */}
-              <View style={styles.toolbar}>
-                <Pressable onPress={cancelIOS} hitSlop={12}>
-                  <Text style={styles.cancelBtn}>Hủy</Text>
-                </Pressable>
-                <Text style={styles.titleText}>{label ?? 'Chọn ngày'}</Text>
-                <Pressable onPress={confirmIOS} hitSlop={12}>
-                  <Text style={styles.confirmBtn}>Xong</Text>
-                </Pressable>
-              </View>
-
-              <DateTimePicker
-                value={tempDate}
-                mode="date"
-                display="inline"
-                minimumDate={minimumDate}
-                maximumDate={maximumDate}
-                onChange={handleIOSChange}
-                accentColor="#f43f5e"
-                themeVariant="light"
-                style={[styles.picker, { width }]}
-              />
-            </View>
+            <WheelSheet
+              value={tempDate}
+              onChange={setTempDate}
+              onCancel={cancelIOS}
+              onConfirm={confirmIOS}
+              label={label}
+              minimumDate={minimumDate}
+              maximumDate={maximumDate}
+            />
           </View>
         </Modal>
       )}
     </View>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   overlay: {
@@ -177,23 +339,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e5e7eb',
   },
-  cancelBtn: {
-    color: '#fb7185',
-    fontSize: 16,
-    fontWeight: '500',
+  cancelBtn: { color: '#fb7185', fontSize: 16, fontWeight: '500' },
+  titleText: { color: '#111827', fontSize: 16, fontWeight: '600' },
+  confirmBtn: { color: '#f43f5e', fontSize: 16, fontWeight: '700' },
+  wheels: {
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
-  titleText: {
+  wheelHighlight: {
+    position: 'absolute',
+    left: 4,
+    right: 4,
+    height: ITEM_H,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+  },
+  wheelItem: {
+    height: ITEM_H,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  wheelText: {
+    fontSize: 17,
+    color: '#9ca3af',
+    fontWeight: '400',
+  },
+  wheelTextSelected: {
     color: '#111827',
-    fontSize: 16,
     fontWeight: '600',
-  },
-  confirmBtn: {
-    color: '#f43f5e',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  picker: {
-    backgroundColor: '#fff',
   },
 });
 
