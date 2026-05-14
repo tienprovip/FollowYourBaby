@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import DateTimePicker, {
@@ -51,17 +52,17 @@ const MONTH_LABELS = [
 // ---------------------------------------------------------------------------
 
 const ITEM_H = 46;
-const VISIBLE = 5;
-const PAD = ITEM_H * Math.floor(VISIBLE / 2);
 
 interface WheelProps {
   items: string[];
   selectedIndex: number;
   onChange: (index: number) => void;
+  wheelHeight: number;
+  pad: number;
   flex?: number;
 }
 
-function Wheel({ items, selectedIndex, onChange, flex = 1 }: WheelProps) {
+function Wheel({ items, selectedIndex, onChange, wheelHeight, pad, flex = 1 }: WheelProps) {
   const ref = useRef<ScrollView>(null);
 
   useLayoutEffect(() => {
@@ -75,16 +76,16 @@ function Wheel({ items, selectedIndex, onChange, flex = 1 }: WheelProps) {
   }
 
   return (
-    <View style={{ flex, height: ITEM_H * VISIBLE }}>
+    <View style={{ flex, height: wheelHeight }}>
       {/* center-row highlight */}
-      <View style={[styles.wheelHighlight, { top: PAD }]} pointerEvents="none" />
+      <View style={[styles.wheelHighlight, { top: pad }]} pointerEvents="none" />
       <ScrollView
         ref={ref}
         showsVerticalScrollIndicator={false}
         snapToInterval={ITEM_H}
         decelerationRate="fast"
         onMomentumScrollEnd={handleScrollEnd}
-        contentContainerStyle={{ paddingVertical: PAD }}
+        contentContainerStyle={{ paddingVertical: pad }}
       >
         {items.map((label, i) => (
           <View key={i} style={styles.wheelItem}>
@@ -127,9 +128,19 @@ function WheelSheet({
   maximumDate,
 }: WheelSheetProps) {
   const insets = useSafeAreaInsets();
+  const { height: screenHeight } = useWindowDimensions();
+
+  // Target ~50% screen height for the wheel area, minus toolbar (~60px) and safe area
+  const toolbarH = 60;
+  const targetH = screenHeight * 0.5 - toolbarH - Math.max(insets.bottom, 8);
+  const rawVisible = Math.floor(targetH / ITEM_H);
+  // Keep odd so selected item is perfectly centered
+  const visibleCount = Math.max(3, rawVisible % 2 === 0 ? rawVisible - 1 : rawVisible);
+  const wheelHeight = visibleCount * ITEM_H;
+  const pad = ITEM_H * Math.floor(visibleCount / 2);
 
   const minYear = minimumDate?.getFullYear() ?? new Date().getFullYear();
-  const maxYear = maximumDate?.getFullYear() ?? new Date().getFullYear() + 5;
+  const maxYear = maximumDate?.getFullYear() ?? new Date().getFullYear() + 10;
   const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) =>
     String(minYear + i),
   );
@@ -185,18 +196,24 @@ function WheelSheet({
           items={days}
           selectedIndex={clampedDayIdx}
           onChange={handleDayChange}
+          wheelHeight={wheelHeight}
+          pad={pad}
           flex={1}
         />
         <Wheel
           items={MONTH_LABELS}
           selectedIndex={monthIdx}
           onChange={handleMonthChange}
+          wheelHeight={wheelHeight}
+          pad={pad}
           flex={2}
         />
         <Wheel
           items={years}
           selectedIndex={yearIdx}
           onChange={handleYearChange}
+          wheelHeight={wheelHeight}
+          pad={pad}
           flex={1}
         />
       </View>
