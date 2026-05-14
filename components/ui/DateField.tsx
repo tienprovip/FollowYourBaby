@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Platform, Pressable, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
@@ -120,26 +120,20 @@ function DateField({
           visible={show}
           onRequestClose={cancelIOS}
         >
-          {/* Backdrop — tap to cancel */}
-          <Pressable
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}
-            onPress={cancelIOS}
-          >
-            {/* Content — use View (not Pressable) so touches don't bubble to backdrop */}
-            <View
-              style={{ backgroundColor: 'white', borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingBottom: 32 }}
-              onStartShouldSetResponder={() => true}
-            >
+          <View style={styles.modalContainer}>
+            {/* Backdrop — separate from content so picker receives native touches */}
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={cancelIOS} />
+
+            {/* Sheet content — not nested inside backdrop Pressable */}
+            <View style={styles.sheet}>
               {/* Toolbar */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+              <View style={styles.toolbar}>
                 <Pressable onPress={cancelIOS} hitSlop={12}>
-                  <Text style={{ color: '#fb7185', fontSize: 16 }}>Hủy</Text>
+                  <Text style={styles.cancelBtn}>Hủy</Text>
                 </Pressable>
-                <Text style={{ color: '#111827', fontWeight: '600', fontSize: 16 }}>
-                  {label ?? 'Chọn ngày'}
-                </Text>
+                <Text style={styles.titleText}>{label ?? 'Chọn ngày'}</Text>
                 <Pressable onPress={confirmIOS} hitSlop={12}>
-                  <Text style={{ color: '#f43f5e', fontWeight: '700', fontSize: 16 }}>Xong</Text>
+                  <Text style={styles.confirmBtn}>Xong</Text>
                 </Pressable>
               </View>
 
@@ -147,16 +141,45 @@ function DateField({
                 value={tempDate}
                 mode="date"
                 display="spinner"
+                locale="vi"
                 minimumDate={minimumDate}
                 maximumDate={maximumDate}
                 onChange={handleIOSChange}
+                style={styles.picker}
               />
             </View>
-          </Pressable>
+          </View>
         </Modal>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  sheet: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingBottom: 32,
+  },
+  toolbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  cancelBtn: { color: '#fb7185', fontSize: 16 },
+  titleText: { color: '#111827', fontWeight: '600', fontSize: 16 },
+  confirmBtn: { color: '#f43f5e', fontWeight: '700', fontSize: 16 },
+  picker: { width: '100%' },
+});
 
 export default DateField;
