@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
@@ -37,6 +37,7 @@ function DateField({
   const [show, setShow] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(value ?? new Date());
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
 
   const hasError = Boolean(error);
   const isIOS = Platform.OS === 'ios';
@@ -146,7 +147,7 @@ function DateField({
                 onChange={handleIOSChange}
                 accentColor="#f43f5e"
                 themeVariant="light"
-                style={styles.picker}
+                style={[styles.picker, { width }]}
               />
             </View>
           </View>
@@ -192,7 +193,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   picker: {
-    width: '100%',
     backgroundColor: '#fff',
   },
 });
