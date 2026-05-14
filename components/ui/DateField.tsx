@@ -3,6 +3,7 @@ import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '@/lib/cn';
 
 export interface DateFieldProps {
@@ -35,6 +36,7 @@ function DateField({
 }: DateFieldProps) {
   const [show, setShow] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(value ?? new Date());
+  const insets = useSafeAreaInsets();
 
   const hasError = Boolean(error);
   const isIOS = Platform.OS === 'ios';
@@ -44,7 +46,6 @@ function DateField({
     setShow(true);
   }
 
-  // Android: onChange fires once on confirm or cancel
   function handleAndroidChange(event: DateTimePickerEvent, selected?: Date) {
     setShow(false);
     if (event.type === 'set' && selected) {
@@ -52,7 +53,7 @@ function DateField({
     }
   }
 
-  // iOS inline: onChange fires each time user taps a date — accumulate into tempDate
+  // iOS inline: onChange fires each time user taps a date
   function handleIOSChange(_event: DateTimePickerEvent, selected?: Date) {
     if (selected) setTempDate(selected);
   }
@@ -124,7 +125,8 @@ function DateField({
           <View style={styles.overlay}>
             <Pressable style={StyleSheet.absoluteFillObject} onPress={cancelIOS} />
 
-            <View style={styles.sheet}>
+            <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+              {/* Toolbar */}
               <View style={styles.toolbar}>
                 <Pressable onPress={cancelIOS} hitSlop={12}>
                   <Text style={styles.cancelBtn}>Hủy</Text>
@@ -161,10 +163,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.45)',
   },
   sheet: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 36,
   },
   toolbar: {
     flexDirection: 'row',
@@ -175,10 +176,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e5e7eb',
   },
-  cancelBtn: { color: '#fb7185', fontSize: 16 },
-  titleText: { color: '#111827', fontWeight: '600', fontSize: 16 },
-  confirmBtn: { color: '#f43f5e', fontWeight: '700', fontSize: 16 },
-  picker: { width: '100%', backgroundColor: 'white' },
+  cancelBtn: {
+    color: '#fb7185',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  titleText: {
+    color: '#111827',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmBtn: {
+    color: '#f43f5e',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  picker: {
+    width: '100%',
+    backgroundColor: '#fff',
+  },
 });
 
 export default DateField;
