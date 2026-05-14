@@ -43,18 +43,18 @@ function Card({
   accessibilityLabel,
 }: CardProps) {
   const baseClass = cn(
-    'bg-white rounded-2xl shadow-sm border border-rose-100',
+    'bg-white rounded-card shadow-brand border border-brand-gray',
     className,
   );
 
   const content = (
     <>
       {header && (
-        <View className="border-b border-rose-100 px-4 py-3">{header}</View>
+        <View className="border-b border-brand-gray px-4 py-3">{header}</View>
       )}
       <View className={paddingMap[padding]}>{children}</View>
       {footer && (
-        <View className="border-t border-rose-100 px-4 py-3">{footer}</View>
+        <View className="border-t border-brand-gray px-4 py-3">{footer}</View>
       )}
     </>
   );

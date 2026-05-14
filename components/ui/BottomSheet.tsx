@@ -118,7 +118,7 @@ function BottomSheet({
       >
         <View
           className={cn(
-            'flex-1 bg-white rounded-t-2xl overflow-hidden',
+            'flex-1 bg-white rounded-t-card overflow-hidden',
             className,
           )}
         >

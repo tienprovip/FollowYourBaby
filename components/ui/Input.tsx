@@ -61,15 +61,15 @@ const Input = forwardRef<TextInput, InputProps>(
     return (
       <View className={cn('w-full', className)}>
         {label && (
-          <Text className="text-slate-700 text-sm font-semibold mb-1">
+          <Text className="text-brand-navy text-sm font-semibold mb-1.5">
             {label}
           </Text>
         )}
 
         <View
           className={cn(
-            'flex-row items-center bg-white border rounded-xl px-3 min-h-[44px]',
-            hasError ? 'border-red-500' : 'border-rose-200',
+            'flex-row items-center bg-white border rounded-input px-3 min-h-[48px]',
+            hasError ? 'border-red-400' : 'border-brand-pink-200',
           )}
         >
           {prefixIcon && (
@@ -85,9 +85,9 @@ const Input = forwardRef<TextInput, InputProps>(
             autoCapitalize={type === 'email' ? 'none' : 'sentences'}
             autoCorrect={type !== 'email' && type !== 'password'}
             placeholder={placeholder}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#B0B8CC"
             className={cn(
-              'flex-1 text-base text-slate-900 py-2',
+              'flex-1 text-base text-brand-navy py-2',
               inputClassName,
             )}
             {...rest}
@@ -100,7 +100,7 @@ const Input = forwardRef<TextInput, InputProps>(
               accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
               className="ml-2 p-1"
             >
-              <Text className="text-rose-400 text-sm">
+              <Text className="text-brand-pink text-sm">
                 {showPassword ? 'Ẩn' : 'Hiện'}
               </Text>
             </Pressable>
@@ -114,7 +114,7 @@ const Input = forwardRef<TextInput, InputProps>(
             {error}
           </Text>
         ) : helperText ? (
-          <Text className="text-slate-400 text-xs mt-1">{helperText}</Text>
+          <Text className="text-brand-navy/50 text-xs mt-1">{helperText}</Text>
         ) : null}
       </View>
     );

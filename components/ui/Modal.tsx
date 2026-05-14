@@ -59,7 +59,7 @@ function Modal({
           >
             <View
               className={cn(
-                'bg-white rounded-2xl shadow-lg p-6 w-full',
+                'bg-white rounded-modal shadow-brand p-6 w-full',
                 className,
               )}
             >

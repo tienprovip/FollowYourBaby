@@ -48,6 +48,63 @@ This SRS organizes features into two phases:
 
 ---
 
+## Design System
+
+### Product Style
+
+Dịu nhẹ · Ấm áp · Đáng tin cậy · Hiện đại · Tối giản · AI-first  
+Tone cảm xúc: bình yên, an toàn, chăm sóc, yêu thương.
+
+### Color Palette
+
+| Token | Hex | Tailwind class | Dùng cho |
+|---|---|---|---|
+| Soft Pink | `#FF8FA8` | `brand-pink` / `brand-pink-400` | Primary action |
+| Lavender | `#B79CFF` | `brand-lavender` / `brand-lavender-400` | AI / Highlight |
+| Peach Cream | `#FFF3EC` | `brand-peach` | Background |
+| Baby Blue | `#A9D6FF` | `brand-blue` | Baby tracking |
+| Mint Green | `#AEE6C8` | `brand-mint` | Success |
+| Warm Gray | `#F7F7F7` | `brand-gray` | Cards |
+| Dark Navy | `#1F2B5B` | `brand-navy` | Text |
+
+### Typography
+
+| Role | Weight | Font |
+|---|---|---|
+| Heading | 700 | Nunito (rounded, friendly) |
+| Body | 400–500 | Nunito / System |
+
+Expo font setup: load `Nunito` via `expo-font` + `useFonts`. Tailwind key: `font-sans` / `font-display`.
+
+### Border Radius Tokens
+
+| Component | Value | Tailwind token |
+|---|---|---|
+| Card | 24px | `rounded-card` |
+| Button | 18px | `rounded-btn` |
+| Input | 16px | `rounded-input` |
+| Modal / Bottom Sheet | 28px | `rounded-modal` |
+
+### Shadow
+
+Soft floating shadow: `0 8px 24px rgba(0,0,0,0.08)`.  
+Tailwind token: `shadow-brand`. Heavier variant: `shadow-brand-lg`.
+
+### Component Mapping
+
+| Component | Primary color | Radius token |
+|---|---|---|
+| `<Button variant="primary">` | `brand-pink` | `rounded-btn` |
+| `<Button variant="ai">` | `brand-lavender` | `rounded-btn` |
+| `<Card>` | white bg, `brand-gray` border | `rounded-card` |
+| `<Input>` | `brand-pink-200` border, `brand-navy` text | `rounded-input` |
+| `<Modal>` | white | `rounded-modal` |
+| `<BottomSheet>` | white | `rounded-t-card` |
+| `<Badge variant="lavender">` | `brand-lavender` | `rounded-full` |
+| `<AIDisclaimer>` | `brand-lavender-50` bg | `rounded-input` |
+
+---
+
 ## Quy tắc thiết kế
 
 ### 1. Người dùng là trung tâm

@@ -10,7 +10,7 @@ import { cn } from '@/lib/cn';
 
 export interface ButtonProps extends Omit<PressableProps, 'style'> {
   /** Visual style of the button */
-  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'ai';
   /** Size preset */
   size?: 'sm' | 'md' | 'lg';
   /** Shows a spinner and disables interaction */
@@ -28,23 +28,25 @@ export interface ButtonProps extends Omit<PressableProps, 'style'> {
 }
 
 const containerVariants: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-rose-500 active:bg-rose-600',
-  secondary: 'bg-rose-100 active:bg-rose-200',
-  ghost: 'bg-transparent active:bg-rose-50',
+  primary:     'bg-brand-pink active:bg-brand-pink-500',
+  secondary:   'bg-brand-peach active:bg-brand-pink-100',
+  ghost:       'bg-transparent active:bg-brand-peach',
   destructive: 'bg-red-500 active:bg-red-600',
+  ai:          'bg-brand-lavender active:bg-brand-lavender-500',
 };
 
 const textVariants: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'text-white',
-  secondary: 'text-rose-600',
-  ghost: 'text-rose-500',
+  primary:     'text-white',
+  secondary:   'text-brand-pink',
+  ghost:       'text-brand-pink',
   destructive: 'text-white',
+  ai:          'text-white',
 };
 
 const containerSizes: Record<NonNullable<ButtonProps['size']>, string> = {
-  sm: 'px-4 py-2 rounded-xl min-h-[36px]',
-  md: 'px-6 py-3 rounded-xl min-h-[44px]',
-  lg: 'px-8 py-4 rounded-xl min-h-[52px]',
+  sm: 'px-4 py-2 rounded-btn min-h-[36px]',
+  md: 'px-6 py-3 rounded-btn min-h-[44px]',
+  lg: 'px-8 py-4 rounded-btn min-h-[52px]',
 };
 
 const textSizes: Record<NonNullable<ButtonProps['size']>, string> = {
@@ -71,6 +73,10 @@ const Button = forwardRef<View, ButtonProps>(
     ref,
   ) => {
     const isDisabled = disabled || loading;
+    const spinnerColor =
+      variant === 'primary' || variant === 'destructive' || variant === 'ai'
+        ? '#ffffff'
+        : '#FF8FA8';
 
     return (
       <Pressable
@@ -91,7 +97,7 @@ const Button = forwardRef<View, ButtonProps>(
         {loading ? (
           <ActivityIndicator
             size="small"
-            color={variant === 'primary' || variant === 'destructive' ? '#ffffff' : '#f43f5e'}
+            color={spinnerColor}
             accessibilityLabel="Đang tải"
           />
         ) : (
@@ -105,7 +111,7 @@ const Button = forwardRef<View, ButtonProps>(
                 textClassName,
               )}
             >
-              {loading ? 'Đang tải...' : label}
+              {label}
             </Text>
             {iconRight && <View className="ml-2">{iconRight}</View>}
           </>
