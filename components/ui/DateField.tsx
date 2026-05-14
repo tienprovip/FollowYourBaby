@@ -44,7 +44,7 @@ function DateField({
     setShow(true);
   }
 
-  // Android: onChange fires once on confirm (event.type === 'set') or cancel ('dismissed')
+  // Android: onChange fires once on confirm or cancel
   function handleAndroidChange(event: DateTimePickerEvent, selected?: Date) {
     setShow(false);
     if (event.type === 'set' && selected) {
@@ -52,7 +52,7 @@ function DateField({
     }
   }
 
-  // iOS: onChange fires on every scroll — accumulate into tempDate
+  // iOS inline: onChange fires each time user taps a date — accumulate into tempDate
   function handleIOSChange(_event: DateTimePickerEvent, selected?: Date) {
     if (selected) setTempDate(selected);
   }
@@ -100,7 +100,7 @@ function DateField({
         </Text>
       )}
 
-      {/* Android: render picker inline when show=true — native dialog appears automatically */}
+      {/* Android: inline native dialog */}
       {!isIOS && show && (
         <DateTimePicker
           value={value ?? new Date()}
@@ -112,7 +112,8 @@ function DateField({
         />
       )}
 
-      {/* iOS: wrap in modal so the spinner doesn't push the layout */}
+      {/* iOS: bottom sheet with inline calendar.
+          display="inline" renders correctly inside Modal (display="spinner" does not). */}
       {isIOS && (
         <Modal
           transparent
@@ -120,13 +121,10 @@ function DateField({
           visible={show}
           onRequestClose={cancelIOS}
         >
-          <View style={styles.modalContainer}>
-            {/* Backdrop — separate from content so picker receives native touches */}
+          <View style={styles.overlay}>
             <Pressable style={StyleSheet.absoluteFillObject} onPress={cancelIOS} />
 
-            {/* Sheet content — not nested inside backdrop Pressable */}
             <View style={styles.sheet}>
-              {/* Toolbar */}
               <View style={styles.toolbar}>
                 <Pressable onPress={cancelIOS} hitSlop={12}>
                   <Text style={styles.cancelBtn}>Hủy</Text>
@@ -140,11 +138,12 @@ function DateField({
               <DateTimePicker
                 value={tempDate}
                 mode="date"
-                display="spinner"
-                locale="vi"
+                display="inline"
                 minimumDate={minimumDate}
                 maximumDate={maximumDate}
                 onChange={handleIOSChange}
+                accentColor="#f43f5e"
+                themeVariant="light"
                 style={styles.picker}
               />
             </View>
@@ -156,30 +155,30 @@ function DateField({
 }
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  overlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
   sheet: {
     backgroundColor: 'white',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingBottom: 32,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 36,
   },
   toolbar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#e5e7eb',
   },
   cancelBtn: { color: '#fb7185', fontSize: 16 },
   titleText: { color: '#111827', fontWeight: '600', fontSize: 16 },
   confirmBtn: { color: '#f43f5e', fontWeight: '700', fontSize: 16 },
-  picker: { width: '100%' },
+  picker: { width: '100%', backgroundColor: 'white' },
 });
 
 export default DateField;
