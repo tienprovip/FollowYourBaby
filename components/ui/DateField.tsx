@@ -67,7 +67,8 @@ function Wheel({ items, selectedIndex, onChange, wheelHeight, pad, flex = 1 }: W
 
   useLayoutEffect(() => {
     ref.current?.scrollTo({ y: selectedIndex * ITEM_H, animated: false });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally mount-only: scrolls to initial position once
 
   function handleScrollEnd(e: { nativeEvent: { contentOffset: { y: number } } }) {
     const raw = Math.round(e.nativeEvent.contentOffset.y / ITEM_H);

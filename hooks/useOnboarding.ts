@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { useAuthStore } from '@/stores/authStore';
+import type { Journey } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // useOnboarding
@@ -14,14 +15,59 @@ interface SubmitResult {
   error: string | null;
 }
 
+// ---------------------------------------------------------------------------
+// Module-level DB helpers (keep submit() complexity low)
+// ---------------------------------------------------------------------------
+
+async function insertPregnancy(userId: string, dueDate: string) {
+  const { error } = await supabase
+    .from('pregnancies')
+    .insert({ owner_id: userId, due_date: dueDate });
+  if (error) throw new Error(error.message);
+}
+
+async function insertBaby(
+  userId: string,
+  name: string,
+  dob: string,
+  sex: 'male' | 'female' | 'unknown',
+  birthWeightG: number | null,
+) {
+  const { error } = await supabase.from('babies').insert({
+    owner_id: userId,
+    name,
+    dob,
+    sex: sex === 'unknown' ? null : sex,
+    birth_weight_g: birthWeightG,
+  });
+  if (error) throw new Error(error.message);
+}
+
+async function markOnboardingComplete(userId: string, journey: Journey) {
+  const role = journey === 'pregnant' ? 'pregnant_mother' : 'parent';
+
+  const { error: authError } = await supabase.auth.updateUser({
+    data: { journey, role, onboarding_completed: true },
+  });
+  if (authError) throw new Error(authError.message);
+
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ role })
+    .eq('id', userId);
+  if (profileError) throw new Error(profileError.message);
+}
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
 export function useOnboarding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const router = useRouter();
   const store = useOnboardingStore();
-
-  // We need the current Supabase user id directly
   const session = useAuthStore((s) => s.session);
 
   async function submit(): Promise<SubmitResult> {
@@ -30,65 +76,27 @@ export function useOnboarding() {
 
     try {
       const userId = session?.user?.id;
-      if (!userId) {
-        throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-      }
+      if (!userId) throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
 
       const { journey, dueDate, babyName, birthDate, gender, birthWeightGrams } = store;
 
-      if (!journey) {
-        throw new Error('Vui lòng chọn hành trình trước.');
-      }
-
-      // 1. Insert domain records -------------------------------------------------
+      if (!journey) throw new Error('Vui lòng chọn hành trình trước.');
+      if (journey === 'pregnant' && !dueDate) throw new Error('Vui lòng chọn ngày dự sinh.');
+      if (journey !== 'pregnant' && !birthDate) throw new Error('Vui lòng chọn ngày sinh của bé.');
 
       if (journey === 'pregnant') {
-        if (dueDate) {
-          const { error: pgError } = await supabase
-            .from('pregnancies')
-            .insert({
-              owner_id: userId,
-              due_date: dueDate,
-            });
-          if (pgError) throw new Error(pgError.message);
-        }
+        await insertPregnancy(userId, dueDate!);
       } else {
-        // has_baby or multiple
-        const name = babyName.trim() || 'Em bé';
-        if (birthDate) {
-          const { error: babyError } = await supabase
-            .from('babies')
-            .insert({
-              owner_id: userId,
-              name,
-              dob: birthDate,
-              sex: gender === 'unknown' ? null : gender,
-              birth_weight_g: birthWeightGrams ?? null,
-            });
-          if (babyError) throw new Error(babyError.message);
-        }
+        await insertBaby(userId, babyName.trim() || 'Em bé', birthDate!, gender, birthWeightGrams ?? null);
       }
 
-      // 2. Mark onboarding completed in user_metadata ---------------------------
-
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          journey,
-          role: journey === 'pregnant' ? 'pregnant_mother' : 'parent',
-          onboarding_completed: true,
-        },
-      });
-      if (updateError) throw new Error(updateError.message);
-
-      // 3. Clean up store and navigate ------------------------------------------
+      await markOnboardingComplete(userId, journey);
 
       store.reset();
       router.replace('/(tabs)');
-
       return { error: null };
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Có lỗi xảy ra. Vui lòng thử lại.';
+      const message = err instanceof Error ? err.message : 'Có lỗi xảy ra. Vui lòng thử lại.';
       setSubmitError(message);
       return { error: message };
     } finally {
@@ -96,9 +104,5 @@ export function useOnboarding() {
     }
   }
 
-  return {
-    submit,
-    isSubmitting,
-    submitError,
-  };
+  return { submit, isSubmitting, submitError };
 }

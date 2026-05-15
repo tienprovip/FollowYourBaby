@@ -19,26 +19,9 @@ function flattenClasses(values: ClassValue[]): string[] {
   return result;
 }
 
-/**
- * Extracts the Tailwind utility prefix (everything before the last `-` segment
- * that isn't a variant prefix) so later classes override earlier ones.
- * E.g. "bg-rose-500" → "bg", "text-sm" → "text", "px-4" → "px".
- */
-function getPrefix(cls: string): string {
-  // Strip variant prefixes like "hover:", "dark:", "md:", etc.
-  const withoutVariant = cls.replace(/^[a-z]+:/, '');
-  // The Tailwind prefix is the first segment before `-`
-  const dashIdx = withoutVariant.indexOf('-');
-  return dashIdx === -1 ? withoutVariant : withoutVariant.slice(0, dashIdx);
-}
-
-/**
- * Groups that should be deduplicated — maps a class to a dedup key so that
- * later values replace earlier ones for the same property.
- */
 type DedupKey = string | ((s: string) => string);
 
-const DEDUP_PATTERNS: Array<[RegExp, DedupKey]> = [
+const DEDUP_PATTERNS: [RegExp, DedupKey][] = [
   [/^(bg)-/, 'bg'],
   [/^(text)-/, 'text-color'],
   [/^(text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl))$/, 'text-size'],

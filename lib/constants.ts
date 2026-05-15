@@ -93,7 +93,7 @@ export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
 export const CARE_PERMISSION = {
   VIEW: 'view',
   EDIT: 'edit',
-  ADMIN: 'admin',
+  FULL: 'full',
 } as const;
 
 export type CarePermission = (typeof CARE_PERMISSION)[keyof typeof CARE_PERMISSION];

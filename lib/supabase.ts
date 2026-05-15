@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 import * as SecureStore from 'expo-secure-store';
 
 // ---------------------------------------------------------------------------
@@ -35,7 +36,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Supabase client
 // ---------------------------------------------------------------------------
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: secureStoreAdapter,
     autoRefreshToken: true,

@@ -38,8 +38,6 @@ function SegmentedControl({
     onChange(key);
   }
 
-  const segmentWidth = `${100 / options.length}%`;
-
   return (
     <View
       className={cn(

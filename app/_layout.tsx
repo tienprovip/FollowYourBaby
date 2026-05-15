@@ -41,7 +41,7 @@ function NavigationGuard() {
       // Fully onboarded — go straight to the app
       router.replace('/(tabs)');
     }
-  }, [user, isLoading, segments]);
+  }, [user, isLoading, segments, router]);
 
   return null;
 }
