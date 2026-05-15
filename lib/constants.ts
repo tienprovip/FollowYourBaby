@@ -79,7 +79,7 @@ export const AI_DISCLAIMER =
 // ---------------------------------------------------------------------------
 
 export const USER_ROLE = {
-  MOTHER: 'mother',
+  PREGNANT_MOTHER: 'pregnant_mother',
   PARENT: 'parent',
   CAREGIVER: 'caregiver',
 } as const;

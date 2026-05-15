@@ -57,13 +57,13 @@ export function useOnboarding() {
         const name = babyName.trim() || 'Em bé';
         if (birthDate) {
           const { error: babyError } = await supabase
-            .from('baby_profiles')
+            .from('babies')
             .insert({
               owner_id: userId,
               name,
-              birth_date: birthDate,
-              gender,
-              birth_weight_grams: birthWeightGrams ?? null,
+              dob: birthDate,
+              sex: gender === 'unknown' ? null : gender,
+              birth_weight_g: birthWeightGrams ?? null,
             });
           if (babyError) throw new Error(babyError.message);
         }
@@ -74,7 +74,7 @@ export function useOnboarding() {
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
           journey,
-          role: journey === 'pregnant' ? 'mother' : 'parent',
+          role: journey === 'pregnant' ? 'pregnant_mother' : 'parent',
           onboarding_completed: true,
         },
       });
@@ -83,7 +83,7 @@ export function useOnboarding() {
       // 3. Clean up store and navigate ------------------------------------------
 
       store.reset();
-      router.replace('/(tabs)/');
+      router.replace('/(tabs)');
 
       return { error: null };
     } catch (err: unknown) {

@@ -39,7 +39,7 @@ function NavigationGuard() {
       router.replace('/(onboarding)/journey');
     } else if (user && user.onboardingCompleted && (inAuthGroup || inOnboardingGroup)) {
       // Fully onboarded — go straight to the app
-      router.replace('/(tabs)/');
+      router.replace('/(tabs)');
     }
   }, [user, isLoading, segments]);
 
