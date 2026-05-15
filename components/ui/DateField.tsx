@@ -9,9 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cn } from '@/lib/cn';
 
@@ -42,9 +40,18 @@ function daysInMonth(year: number, month: number): number {
 }
 
 const MONTH_LABELS = [
-  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-  'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-  'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+  'Tháng 1',
+  'Tháng 2',
+  'Tháng 3',
+  'Tháng 4',
+  'Tháng 5',
+  'Tháng 6',
+  'Tháng 7',
+  'Tháng 8',
+  'Tháng 9',
+  'Tháng 10',
+  'Tháng 11',
+  'Tháng 12',
 ];
 
 // ---------------------------------------------------------------------------
@@ -89,13 +96,8 @@ function Wheel({ items, selectedIndex, onChange, wheelHeight, pad, flex = 1 }: W
         contentContainerStyle={{ paddingVertical: pad }}
       >
         {items.map((label, i) => (
-          <View key={i} style={styles.wheelItem}>
-            <Text
-              style={[
-                styles.wheelText,
-                i === selectedIndex && styles.wheelTextSelected,
-              ]}
-            >
+          <View key={`${label}-${i}`} style={styles.wheelItem}>
+            <Text style={[styles.wheelText, i === selectedIndex && styles.wheelTextSelected]}>
               {label}
             </Text>
           </View>
@@ -142,33 +144,35 @@ function WheelSheet({
 
   const minYear = minimumDate?.getFullYear() ?? new Date().getFullYear();
   const maxYear = maximumDate?.getFullYear() ?? new Date().getFullYear() + 10;
-  const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) =>
-    String(minYear + i),
-  );
+  const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => String(minYear + i));
 
-  const [yearIdx, setYearIdx] = useState(
-    Math.max(0, value.getFullYear() - minYear),
-  );
+  const [yearIdx, setYearIdx] = useState(Math.max(0, value.getFullYear() - minYear));
   const [monthIdx, setMonthIdx] = useState(value.getMonth()); // 0-based
   const [dayIdx, setDayIdx] = useState(value.getDate() - 1); // 0-based
 
   const currentYear = minYear + yearIdx;
   const currentMonth = monthIdx + 1; // 1-based for daysInMonth
   const totalDays = daysInMonth(currentYear, currentMonth);
-  const days = Array.from({ length: totalDays }, (_, i) =>
-    String(i + 1).padStart(2, '0'),
-  );
+  const days = Array.from({ length: totalDays }, (_, i) => String(i + 1).padStart(2, '0'));
   const clampedDayIdx = Math.min(dayIdx, totalDays - 1);
 
   function handleYearChange(idx: number) {
     setYearIdx(idx);
-    const d = new Date(minYear + idx, monthIdx, Math.min(clampedDayIdx + 1, daysInMonth(minYear + idx, monthIdx + 1)));
+    const d = new Date(
+      minYear + idx,
+      monthIdx,
+      Math.min(clampedDayIdx + 1, daysInMonth(minYear + idx, monthIdx + 1)),
+    );
     onChange(d);
   }
 
   function handleMonthChange(idx: number) {
     setMonthIdx(idx);
-    const d = new Date(currentYear, idx, Math.min(clampedDayIdx + 1, daysInMonth(currentYear, idx + 1)));
+    const d = new Date(
+      currentYear,
+      idx,
+      Math.min(clampedDayIdx + 1, daysInMonth(currentYear, idx + 1)),
+    );
     onChange(d);
   }
 
@@ -263,11 +267,7 @@ function DateField({
 
   return (
     <View className={cn('w-full', className)}>
-      {label && (
-        <Text className="text-slate-700 text-sm font-semibold mb-1">
-          {label}
-        </Text>
-      )}
+      {label && <Text className="text-slate-700 text-sm font-semibold mb-1">{label}</Text>}
 
       <Pressable
         accessibilityRole="button"
@@ -279,12 +279,7 @@ function DateField({
         )}
       >
         <Text className="text-rose-400 mr-2">📅</Text>
-        <Text
-          className={cn(
-            'flex-1 text-base py-2',
-            value ? 'text-slate-900' : 'text-slate-400',
-          )}
-        >
+        <Text className={cn('flex-1 text-base py-2', value ? 'text-slate-900' : 'text-slate-400')}>
           {value ? formatDate(value) : placeholder}
         </Text>
       </Pressable>
@@ -309,12 +304,7 @@ function DateField({
 
       {/* iOS custom wheel picker — avoids UICalendarView internal padding issues */}
       {isIOS && (
-        <Modal
-          transparent
-          animationType="slide"
-          visible={show}
-          onRequestClose={cancelIOS}
-        >
+        <Modal transparent animationType="slide" visible={show} onRequestClose={cancelIOS}>
           <View style={styles.overlay}>
             <Pressable style={StyleSheet.absoluteFillObject} onPress={cancelIOS} />
             <WheelSheet
