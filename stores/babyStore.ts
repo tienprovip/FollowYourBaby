@@ -1,23 +1,54 @@
 import { create } from 'zustand';
-import type { BabyProfile } from '@/types/app';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ---------------------------------------------------------------------------
-// Baby store — tracks the currently active baby profile.
-// The list of babies is fetched via TanStack Query; only the selected ID
-// lives here so it survives navigation without a refetch.
-// ---------------------------------------------------------------------------
+const ACTIVE_BABY_KEY = 'active_baby_id';
+const ACTIVE_PREGNANCY_KEY = 'active_pregnancy_id';
 
-interface BabyState {
+interface ActiveContextState {
   activeBabyId: string | null;
-  activeBaby: BabyProfile | null;
-  setActiveBaby: (baby: BabyProfile | null) => void;
+  activePregnancyId: string | null;
+  setActiveBabyId: (id: string | null) => void;
+  setActivePregnancyId: (id: string | null) => void;
+  hydrate: () => Promise<void>;
   reset: () => void;
 }
 
-export const useBabyStore = create<BabyState>((set) => ({
+export const useBabyStore = create<ActiveContextState>((set) => ({
   activeBabyId: null,
-  activeBaby: null,
-  setActiveBaby: (baby) =>
-    set({ activeBaby: baby, activeBabyId: baby?.id ?? null }),
-  reset: () => set({ activeBabyId: null, activeBaby: null }),
+  activePregnancyId: null,
+
+  setActiveBabyId: (id) => {
+    set({ activeBabyId: id });
+    if (id) {
+      AsyncStorage.setItem(ACTIVE_BABY_KEY, id).catch(() => null);
+    } else {
+      AsyncStorage.removeItem(ACTIVE_BABY_KEY).catch(() => null);
+    }
+  },
+
+  setActivePregnancyId: (id) => {
+    set({ activePregnancyId: id });
+    if (id) {
+      AsyncStorage.setItem(ACTIVE_PREGNANCY_KEY, id).catch(() => null);
+    } else {
+      AsyncStorage.removeItem(ACTIVE_PREGNANCY_KEY).catch(() => null);
+    }
+  },
+
+  hydrate: async () => {
+    const [babyId, pregnancyId] = await Promise.all([
+      AsyncStorage.getItem(ACTIVE_BABY_KEY),
+      AsyncStorage.getItem(ACTIVE_PREGNANCY_KEY),
+    ]);
+    set({
+      activeBabyId: babyId ?? null,
+      activePregnancyId: pregnancyId ?? null,
+    });
+  },
+
+  reset: () => {
+    set({ activeBabyId: null, activePregnancyId: null });
+    AsyncStorage.removeItem(ACTIVE_BABY_KEY).catch(() => null);
+    AsyncStorage.removeItem(ACTIVE_PREGNANCY_KEY).catch(() => null);
+  },
 }));

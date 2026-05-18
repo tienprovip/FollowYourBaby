@@ -325,8 +325,8 @@ Tailwind token: `shadow-brand`. Heavier variant: `shadow-brand-lg`.
 
 - [x] Sprint 1: Thiết lập Expo + Supabase, đăng ký email, đăng nhập, đăng xuất
 - [x] Sprint 1: Xây onboarding chọn hành trình và thu thập hồ sơ người dùng
-- [ ] Sprint 2: Quản lý profile người dùng, nhiều bé, nhiều thai kỳ
-- [ ] Sprint 2: Chia sẻ quyền chăm sóc và phân quyền
+- [x] Sprint 2: Quản lý profile người dùng, nhiều bé, nhiều thai kỳ
+- [x] Sprint 2: Chia sẻ quyền chăm sóc và phân quyền
 - [ ] Sprint 3: Tracking cơ bản cho mẹ bầu: cân nặng, thai máy, triệu chứng
 - [ ] Sprint 4: Tracking em bé: bú, ngủ, tã, tăng trưởng
 - [ ] Sprint 5: Hồ sơ em bé, mốc phát triển, biểu đồ tăng trưởng
