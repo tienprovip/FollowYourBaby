@@ -329,7 +329,7 @@ Tailwind token: `shadow-brand`. Heavier variant: `shadow-brand-lg`.
 - [x] Sprint 2: Chia sẻ quyền chăm sóc và phân quyền
 - [x] Sprint 3: Tracking cơ bản cho mẹ bầu: cân nặng, thai máy, triệu chứng
 - [x] Sprint 4: Tracking em bé: bú, ngủ, tã, tăng trưởng
-- [ ] Sprint 5: Hồ sơ em bé, mốc phát triển, biểu đồ tăng trưởng
+- [x] Sprint 5: Hồ sơ em bé, mốc phát triển, biểu đồ tăng trưởng
 - [ ] Sprint 6: Xây Supabase Edge Function AI chat và context engine
 - [ ] Sprint 7: Tích hợp AI chat vào app và bộ nhớ cá nhân hoá
 - [ ] Sprint 8: Dashboard phân tích, nhắc việc, push notification

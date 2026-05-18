@@ -30,6 +30,12 @@ function BabyIcon({ focused }: TabIconProps) {
   );
 }
 
+function MilestonesIcon({ focused }: TabIconProps) {
+  return (
+    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>⭐</Text>
+  );
+}
+
 function ProfileIcon({ focused }: TabIconProps) {
   return (
     <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>👤</Text>
@@ -90,6 +96,14 @@ export default function TabsLayout() {
           title: 'Em bé',
           tabBarIcon: BabyIcon,
           href: activeBabyId ? '/(tabs)/baby' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="milestones"
+        options={{
+          title: 'Moc',
+          tabBarIcon: MilestonesIcon,
+          href: activeBabyId ? '/(tabs)/milestones' : null,
         }}
       />
       <Tabs.Screen
