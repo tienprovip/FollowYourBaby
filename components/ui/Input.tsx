@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from 'react';
 import {
   Pressable,
+  StyleSheet,
   Text,
   TextInput,
   TextInputProps,
@@ -9,7 +10,7 @@ import {
 import { cn } from '@/lib/cn';
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
-  /** Input field type — drives keyboard and secureTextEntry */
+  /** Input field type - drives keyboard and secureTextEntry */
   type?: 'text' | 'email' | 'numeric' | 'password';
   /** Label displayed above the input */
   label?: string;
@@ -61,19 +62,19 @@ const Input = forwardRef<TextInput, InputProps>(
     return (
       <View className={cn('w-full', className)}>
         {label && (
-          <Text className="text-brand-navy text-sm font-semibold mb-1.5">
+          <Text className="mb-1.5 text-sm font-semibold text-brand-navy">
             {label}
           </Text>
         )}
 
         <View
           className={cn(
-            'flex-row items-center bg-white border rounded-input px-3 min-h-[48px]',
+            'min-h-[56px] flex-row items-center rounded-input border bg-white px-5 py-0',
             hasError ? 'border-red-400' : 'border-brand-pink-200',
           )}
         >
           {prefixIcon && (
-            <View className="mr-2 opacity-60">{prefixIcon}</View>
+            <View className="mr-3 opacity-60">{prefixIcon}</View>
           )}
 
           <TextInput
@@ -86,10 +87,8 @@ const Input = forwardRef<TextInput, InputProps>(
             autoCorrect={type !== 'email' && type !== 'password'}
             placeholder={placeholder}
             placeholderTextColor="#B0B8CC"
-            className={cn(
-              'flex-1 text-base text-brand-navy py-2',
-              inputClassName,
-            )}
+            style={styles.input}
+            className={cn('h-[22px] flex-1 text-brand-navy', inputClassName)}
             {...rest}
           />
 
@@ -98,23 +97,23 @@ const Input = forwardRef<TextInput, InputProps>(
               onPress={() => setShowPassword((p) => !p)}
               accessibilityRole="button"
               accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-              className="ml-2 p-1"
+              className="ml-3 min-h-[56px] justify-center px-1"
             >
-              <Text className="text-brand-pink text-sm">
+              <Text className="text-sm text-brand-pink">
                 {showPassword ? 'Ẩn' : 'Hiện'}
               </Text>
             </Pressable>
           ) : (
-            suffixIcon && <View className="ml-2 opacity-60">{suffixIcon}</View>
+            suffixIcon && <View className="ml-3 opacity-60">{suffixIcon}</View>
           )}
         </View>
 
         {hasError ? (
-          <Text className="text-red-500 text-xs mt-1" accessibilityRole="alert">
+          <Text className="mt-1 text-xs text-red-500" accessibilityRole="alert">
             {error}
           </Text>
         ) : helperText ? (
-          <Text className="text-brand-navy/50 text-xs mt-1">{helperText}</Text>
+          <Text className="mt-1 text-xs text-brand-navy/50">{helperText}</Text>
         ) : null}
       </View>
     );
@@ -122,5 +121,17 @@ const Input = forwardRef<TextInput, InputProps>(
 );
 
 Input.displayName = 'Input';
+
+const styles = StyleSheet.create({
+  input: {
+    fontSize: 16,
+    lineHeight: 22,
+    height: 22,
+    padding: 0,
+    paddingVertical: 0,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
+});
 
 export default Input;

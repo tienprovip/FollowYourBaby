@@ -23,8 +23,8 @@ type DedupKey = string | ((s: string) => string);
 
 const DEDUP_PATTERNS: [RegExp, DedupKey][] = [
   [/^(bg)-/, 'bg'],
-  [/^(text)-/, 'text-color'],
   [/^(text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl))$/, 'text-size'],
+  [/^(text)-/, 'text-color'],
   [/^(font)-/, 'font'],
   [/^(p|px|py|pt|pb|pl|pr)-/, (m: string) => m],
   [/^(m|mx|my|mt|mb|ml|mr)-/, (m: string) => m],

@@ -1,47 +1,42 @@
 import React, { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@/lib/zodResolver';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { zodResolver } from '@/lib/zodResolver';
 
-import { useAuth } from '@/hooks/useAuth';
-import { ToastProvider, useToast } from '@/components/ui/Toast';
 import Button from '@/components/ui/Button';
 import FormField from '@/components/ui/FormField';
-
-// ---------------------------------------------------------------------------
-// Validation schema
-// ---------------------------------------------------------------------------
+import { ToastProvider, useToast } from '@/components/ui/Toast';
+import {
+  AuthHeader,
+  AuthScreen,
+  AuthTabs,
+  BackButton,
+  LockIcon,
+  MailIcon,
+  SuccessPanel,
+  UserIcon,
+} from '@/components/auth/AuthChrome';
+import { cn } from '@/lib/cn';
+import { useAuth } from '@/hooks/useAuth';
 
 const registerSchema = z
   .object({
     displayName: z
       .string()
-      .min(1, 'Vui lòng nhập họ và tên.')
+      .min(1, 'Nhập họ và tên nhé.')
       .min(2, 'Họ và tên phải có ít nhất 2 ký tự.')
       .max(60, 'Họ và tên không được vượt quá 60 ký tự.'),
-    email: z
-      .string()
-      .min(1, 'Vui lòng nhập email.')
-      .email('Địa chỉ email không hợp lệ.'),
+    email: z.string().min(1, 'Nhập email nhé.').email('Email chưa đúng định dạng.'),
     password: z
       .string()
-      .min(1, 'Vui lòng nhập mật khẩu.')
+      .min(1, 'Nhập mật khẩu nhé.')
       .min(8, 'Mật khẩu phải có ít nhất 8 ký tự.')
       .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất 1 chữ hoa.')
       .regex(/[0-9]/, 'Mật khẩu phải có ít nhất 1 chữ số.'),
-    confirmPassword: z
-      .string()
-      .min(1, 'Vui lòng xác nhận mật khẩu.'),
+    confirmPassword: z.string().min(1, 'Nhập lại mật khẩu nhé.'),
+    acceptedTerms: z.boolean().refine((value) => value, 'Đồng ý với điều khoản để tiếp tục nhé.'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Mật khẩu xác nhận không khớp.',
@@ -50,10 +45,6 @@ const registerSchema = z
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
-// ---------------------------------------------------------------------------
-// Password strength checklist
-// ---------------------------------------------------------------------------
-
 interface PasswordChecklistProps {
   password: string;
 }
@@ -61,57 +52,32 @@ interface PasswordChecklistProps {
 function PasswordChecklist({ password }: PasswordChecklistProps) {
   const checks = [
     { label: 'Ít nhất 8 ký tự', pass: password.length >= 8 },
-    { label: 'Có chữ hoa (A–Z)', pass: /[A-Z]/.test(password) },
-    { label: 'Có chữ số (0–9)', pass: /[0-9]/.test(password) },
+    { label: 'Có chữ hoa A-Z', pass: /[A-Z]/.test(password) },
+    { label: 'Có chữ số 0-9', pass: /[0-9]/.test(password) },
   ];
 
   if (!password) return null;
 
   return (
-    <View className="mt-2 px-1 gap-y-1">
-      {checks.map((c) => (
-        <View key={c.label} className="flex-row items-center gap-x-2">
-          <Text className={c.pass ? 'text-green-500 text-xs' : 'text-gray-400 text-xs'}>
-            {c.pass ? '✓' : '○'}
-          </Text>
+    <View className="mt-2 gap-y-1 px-1">
+      {checks.map((check) => (
+        <View key={check.label} className="flex-row items-center gap-x-2">
           <Text
-            className={
-              c.pass ? 'text-green-600 text-xs' : 'text-gray-400 text-xs'
-            }
+            className={cn(
+              'text-xs font-bold',
+              check.pass ? 'text-green-600' : 'text-brand-navy/35',
+            )}
           >
-            {c.label}
+            {check.pass ? '✓' : '○'}
+          </Text>
+          <Text className={cn('text-xs', check.pass ? 'text-green-700' : 'text-brand-navy/45')}>
+            {check.label}
           </Text>
         </View>
       ))}
     </View>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Social button stub
-// ---------------------------------------------------------------------------
-
-interface SocialButtonProps {
-  label: string;
-  onPress: () => void;
-}
-
-function SocialButton({ label, onPress }: SocialButtonProps) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      className="flex-1 items-center justify-center border border-rose-200 rounded-xl py-3 bg-white active:bg-rose-50 mx-1"
-    >
-      <Text className="text-gray-700 text-sm font-medium">{label}</Text>
-    </Pressable>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Inner component (needs ToastProvider context)
-// ---------------------------------------------------------------------------
 
 function RegisterContent() {
   const router = useRouter();
@@ -124,7 +90,7 @@ function RegisterContent() {
     control,
     handleSubmit,
     watch,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -132,6 +98,7 @@ function RegisterContent() {
       email: '',
       password: '',
       confirmPassword: '',
+      acceptedTerms: false,
     },
   });
 
@@ -144,175 +111,157 @@ function RegisterContent() {
       setServerError(error);
       return;
     }
-    // Supabase sends a confirmation email by default.
-    // Show success state; onboarding is the next step after email verification.
     setEmailSent(true);
   }
 
-  function handleSocialStub() {
-    showToast('Sắp ra mắt — tính năng này đang được phát triển.', 'info');
+  function handlePhoneStub() {
+    showToast('Đăng ký bằng số điện thoại sắp ra mắt.', 'info');
   }
 
-  // --- Success state after registration ---
   if (emailSent) {
     return (
-      <SafeAreaView className="flex-1 bg-[#fffdf7]">
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-6 pt-12 pb-8 items-center"
-        >
-          <View className="w-20 h-20 rounded-full bg-rose-100 items-center justify-center mb-6">
-            <Text className="text-4xl">💌</Text>
-          </View>
-          <Text className="text-2xl font-bold text-gray-900 mb-3 text-center">
-            Kiểm tra hộp thư của bạn
-          </Text>
-          <Text className="text-base text-gray-500 text-center mb-8 leading-6">
-            Chúng tôi đã gửi email xác nhận đến địa chỉ của bạn. Vui lòng
-            kiểm tra hộp thư (kể cả thư mục Spam) và nhấn vào đường dẫn để
-            kích hoạt tài khoản.
-          </Text>
-          <Button
-            label="Về trang đăng nhập"
-            variant="primary"
-            size="lg"
-            className="w-full"
-            onPress={() => router.replace('/(auth)/login')}
-          />
-        </ScrollView>
-      </SafeAreaView>
+      <AuthScreen contentClassName="min-h-full justify-center">
+        <BackButton label="Quay lại đăng nhập" onPress={() => router.replace('/(auth)/login')} />
+        <AuthHeader
+          title="Kiểm tra hộp thư"
+          subtitle="Chúng tôi đã gửi email xác nhận tài khoản của bạn."
+        />
+        <SuccessPanel
+          title="Yêu cầu đã được gửi!"
+          message="Vui lòng kiểm tra email để kích hoạt tài khoản trước khi đăng nhập."
+        />
+        <Button
+          label="Quay lại đăng nhập"
+          variant="primary"
+          size="lg"
+          className="mt-8 w-full"
+          onPress={() => router.replace('/(auth)/login')}
+        />
+      </AuthScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#fffdf7]">
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-6 pt-12 pb-8"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header */}
-          <View className="mb-8">
-            <Text className="text-3xl font-bold text-gray-900 mb-2">
-              Tạo tài khoản
-            </Text>
-            <Text className="text-base text-gray-500">
-              Bắt đầu hành trình cùng FollowYourBaby
-            </Text>
-          </View>
+    <AuthScreen>
+      <BackButton label="Quay lại đăng nhập" onPress={() => router.back()} />
 
-          {/* Form */}
-          <View className="gap-y-4">
-            <FormField
-              control={control}
-              name="displayName"
-              label="Họ và tên"
-              placeholder="Tên của bạn"
-              type="text"
-              autoComplete="name"
-              returnKeyType="next"
-            />
+      <AuthHeader title="Tạo tài khoản" subtitle="Đồng hành cùng mẹ và bé ngay hôm nay" />
 
-            <FormField
-              control={control}
-              name="email"
-              label="Email"
-              placeholder="email@example.com"
-              type="email"
-              autoComplete="email"
-              autoCapitalize="none"
-              returnKeyType="next"
-            />
+      <AuthTabs onPhonePress={handlePhoneStub} />
 
-            <View>
-              <FormField
-                control={control}
-                name="password"
-                label="Mật khẩu"
-                placeholder="Ít nhất 8 ký tự"
-                type="password"
-                autoComplete="new-password"
-                returnKeyType="next"
-              />
-              <PasswordChecklist password={watchedPassword} />
-            </View>
+      <View className="gap-y-3">
+        <FormField
+          control={control}
+          name="displayName"
+          placeholder="Họ và tên"
+          type="text"
+          autoComplete="name"
+          prefixIcon={<UserIcon />}
+          returnKeyType="next"
+        />
 
-            <FormField
-              control={control}
-              name="confirmPassword"
-              label="Xác nhận mật khẩu"
-              placeholder="Nhập lại mật khẩu"
-              type="password"
-              autoComplete="new-password"
-              returnKeyType="done"
-              onSubmitEditing={handleSubmit(onSubmit)}
-            />
-          </View>
+        <FormField
+          control={control}
+          name="email"
+          placeholder="Email"
+          type="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          prefixIcon={<MailIcon />}
+          returnKeyType="next"
+        />
 
-          {/* Server error */}
-          {serverError ? (
-            <View className="mt-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-              <Text
-                className="text-red-600 text-sm"
-                accessibilityRole="alert"
-              >
-                {serverError}
-              </Text>
-            </View>
-          ) : null}
-
-          {/* Primary CTA */}
-          <Button
-            label="Đăng ký"
-            variant="primary"
-            size="lg"
-            className="w-full mt-6"
-            loading={isSubmitting}
-            disabled={isSubmitting}
-            onPress={handleSubmit(onSubmit)}
+        <View>
+          <FormField
+            control={control}
+            name="password"
+            placeholder="Mật khẩu"
+            type="password"
+            autoComplete="new-password"
+            prefixIcon={<LockIcon />}
+            returnKeyType="next"
           />
+          <PasswordChecklist password={watchedPassword} />
+        </View>
 
-          {/* Divider */}
-          <View className="flex-row items-center my-6">
-            <View className="flex-1 h-px bg-rose-100" />
-            <Text className="mx-3 text-gray-400 text-sm">hoặc</Text>
-            <View className="flex-1 h-px bg-rose-100" />
-          </View>
+        <FormField
+          control={control}
+          name="confirmPassword"
+          placeholder="Xác nhận mật khẩu"
+          type="password"
+          autoComplete="new-password"
+          prefixIcon={<LockIcon />}
+          returnKeyType="done"
+          onSubmitEditing={handleSubmit(onSubmit)}
+        />
+      </View>
 
-          {/* Social signup stubs */}
-          <View className="flex-row">
-            <SocialButton label="Google" onPress={handleSocialStub} />
-            <SocialButton label="Apple" onPress={handleSocialStub} />
-            <SocialButton label="Facebook" onPress={handleSocialStub} />
-          </View>
-
-          {/* Login link */}
-          <View className="flex-row justify-center mt-8">
-            <Text className="text-gray-500 text-sm">Đã có tài khoản? </Text>
-            <Pressable
-              onPress={() => router.push('/(auth)/login')}
-              accessibilityRole="button"
-              accessibilityLabel="Đăng nhập"
+      <Controller
+        control={control}
+        name="acceptedTerms"
+        render={({ field: { onChange, value } }) => (
+          <Pressable
+            onPress={() => onChange(!value)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: value }}
+            accessibilityLabel="Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật"
+            className="mt-4 flex-row items-start"
+          >
+            <View
+              className={cn(
+                'mr-3 mt-0.5 h-5 w-5 items-center justify-center rounded border-2',
+                value
+                  ? 'border-brand-pink-500 bg-brand-pink-500'
+                  : 'border-brand-navy bg-brand-navy/5',
+              )}
             >
-              <Text className="text-rose-500 text-sm font-semibold">
-                Đăng nhập
-              </Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              {value ? <Text className="text-xs font-bold text-white">✓</Text> : null}
+            </View>
+            <Text className="flex-1 text-sm leading-5 text-brand-navy/65">
+              Tôi đồng ý với{' '}
+              <Text className="font-semibold text-brand-lavender-600">Điều khoản sử dụng</Text> và{' '}
+              <Text className="font-semibold text-brand-lavender-600">Chính sách bảo mật</Text>
+            </Text>
+          </Pressable>
+        )}
+      />
+      {errors.acceptedTerms ? (
+        <Text className="mt-1 text-xs text-red-500" accessibilityRole="alert">
+          {errors.acceptedTerms.message}
+        </Text>
+      ) : null}
+
+      {serverError ? (
+        <View className="mt-3 rounded-input border border-red-200 bg-red-50 px-4 py-3">
+          <Text className="text-sm text-red-600" accessibilityRole="alert">
+            {serverError}
+          </Text>
+        </View>
+      ) : null}
+
+      <Button
+        label="Đăng ký"
+        variant="primary"
+        size="lg"
+        className="mt-7 w-full shadow-brand"
+        loading={isSubmitting}
+        disabled={isSubmitting}
+        onPress={handleSubmit(onSubmit)}
+      />
+
+      <View className="mt-8 flex-row justify-center">
+        <Text className="text-sm text-brand-navy/60">Đã có tài khoản? </Text>
+        <Pressable
+          onPress={() => router.push('/(auth)/login')}
+          accessibilityRole="button"
+          accessibilityLabel="Đăng nhập"
+        >
+          <Text className="text-sm font-bold text-brand-pink-500">Đăng nhập</Text>
+        </Pressable>
+      </View>
+    </AuthScreen>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Screen export
-// ---------------------------------------------------------------------------
 
 export default function RegisterScreen() {
   return (

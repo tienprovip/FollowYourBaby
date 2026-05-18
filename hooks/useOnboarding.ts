@@ -19,6 +19,13 @@ interface SubmitResult {
 // Module-level DB helpers (keep submit() complexity low)
 // ---------------------------------------------------------------------------
 
+async function ensureProfile(userId: string, displayName?: string) {
+  const { error } = await supabase
+    .from('profiles')
+    .upsert({ id: userId, full_name: displayName ?? null }, { onConflict: 'id' });
+  if (error) throw new Error(error.message);
+}
+
 async function insertPregnancy(userId: string, dueDate: string) {
   const { error } = await supabase
     .from('pregnancies')
@@ -83,6 +90,12 @@ export function useOnboarding() {
       if (!journey) throw new Error('Vui lòng chọn hành trình trước.');
       if (journey === 'pregnant' && !dueDate) throw new Error('Vui lòng chọn ngày dự sinh.');
       if (journey !== 'pregnant' && !birthDate) throw new Error('Vui lòng chọn ngày sinh của bé.');
+
+      const displayName =
+        session.user.user_metadata?.display_name ??
+        session.user.user_metadata?.full_name ??
+        session.user.email?.split('@')[0];
+      await ensureProfile(userId, displayName);
 
       if (journey === 'pregnant') {
         await insertPregnancy(userId, dueDate!);

@@ -1,39 +1,46 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   PressableProps,
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { cn } from '@/lib/cn';
 
 export interface ButtonProps extends Omit<PressableProps, 'style'> {
-  /** Visual style of the button */
   variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'ai';
-  /** Size preset */
   size?: 'sm' | 'md' | 'lg';
-  /** Shows a spinner and disables interaction */
   loading?: boolean;
-  /** Element rendered to the left of the label */
   iconLeft?: React.ReactNode;
-  /** Element rendered to the right of the label */
   iconRight?: React.ReactNode;
-  /** Button label text */
   label: string;
-  /** NativeWind className override */
   className?: string;
-  /** Text className override */
   textClassName?: string;
 }
 
-const containerVariants: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary:     'bg-brand-pink active:bg-brand-pink-500',
-  secondary:   'bg-brand-peach active:bg-brand-pink-100',
-  ghost:       'bg-transparent active:bg-brand-peach',
-  destructive: 'bg-red-500 active:bg-red-600',
-  ai:          'bg-brand-lavender active:bg-brand-lavender-500',
-};
+const bgColors = StyleSheet.create({
+  primary:     { backgroundColor: '#FF6B8A' },
+  secondary:   { backgroundColor: '#FFF3EC' },
+  ghost:       { backgroundColor: 'transparent' },
+  destructive: { backgroundColor: '#ef4444' },
+  ai:          { backgroundColor: '#9B7AEF' },
+});
+
+const bgPressedColors = StyleSheet.create({
+  primary:     { backgroundColor: '#E84E70' },
+  secondary:   { backgroundColor: '#FFD9E3' },
+  ghost:       { backgroundColor: '#FFF3EC' },
+  destructive: { backgroundColor: '#dc2626' },
+  ai:          { backgroundColor: '#7C5CDB' },
+});
+
+const borderRadius = StyleSheet.create({
+  sm: { borderRadius: 18 },
+  md: { borderRadius: 18 },
+  lg: { borderRadius: 18 },
+});
 
 const textVariants: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:     'text-white',
@@ -43,10 +50,10 @@ const textVariants: Record<NonNullable<ButtonProps['variant']>, string> = {
   ai:          'text-white',
 };
 
-const containerSizes: Record<NonNullable<ButtonProps['size']>, string> = {
-  sm: 'px-4 py-2 rounded-btn min-h-[36px]',
-  md: 'px-6 py-3 rounded-btn min-h-[44px]',
-  lg: 'px-8 py-4 rounded-btn min-h-[52px]',
+const innerSizes: Record<NonNullable<ButtonProps['size']>, string> = {
+  sm: 'px-4 py-2 min-h-[36px]',
+  md: 'px-6 py-3 min-h-[44px]',
+  lg: 'px-8 py-4 min-h-[52px]',
 };
 
 const textSizes: Record<NonNullable<ButtonProps['size']>, string> = {
@@ -68,11 +75,15 @@ const Button = forwardRef<View, ButtonProps>(
       className,
       textClassName,
       accessibilityLabel,
+      onPressIn,
+      onPressOut,
       ...rest
     },
     ref,
   ) => {
+    const [pressed, setPressed] = useState(false);
     const isDisabled = disabled || loading;
+
     const spinnerColor =
       variant === 'primary' || variant === 'destructive' || variant === 'ai'
         ? '#ffffff'
@@ -85,11 +96,22 @@ const Button = forwardRef<View, ButtonProps>(
         accessibilityLabel={accessibilityLabel ?? label}
         accessibilityState={{ disabled: isDisabled, busy: loading }}
         disabled={isDisabled}
+        onPressIn={(e) => {
+          setPressed(true);
+          onPressIn?.(e);
+        }}
+        onPressOut={(e) => {
+          setPressed(false);
+          onPressOut?.(e);
+        }}
+        style={[
+          pressed ? bgPressedColors[variant] : bgColors[variant],
+          borderRadius[size],
+          isDisabled && { opacity: 0.5 },
+        ]}
         className={cn(
           'flex-row items-center justify-center',
-          containerVariants[variant],
-          containerSizes[size],
-          isDisabled && 'opacity-50',
+          innerSizes[size],
           className,
         )}
         {...rest}

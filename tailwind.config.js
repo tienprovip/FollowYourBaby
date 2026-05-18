@@ -20,11 +20,12 @@ module.exports = {
         },
         // Tonal scales derived from brand primaries
         'brand-pink': {
+          DEFAULT: '#FF8FA8',
           50:  '#FFF0F3',
           100: '#FFD9E3',
           200: '#FFBDCE',
           300: '#FF9FBA',
-          400: '#FF8FA8', // base
+          400: '#FF8FA8',
           500: '#FF6B8A',
           600: '#E84E70',
           700: '#C73558',
@@ -32,11 +33,12 @@ module.exports = {
           900: '#7A0D2E',
         },
         'brand-lavender': {
+          DEFAULT: '#B79CFF',
           50:  '#F4F0FF',
           100: '#E5DAFF',
           200: '#CFC1FF',
           300: '#BCA5FF',
-          400: '#B79CFF', // base
+          400: '#B79CFF',
           500: '#9B7AEF',
           600: '#7C5CDB',
           700: '#5E41C0',
