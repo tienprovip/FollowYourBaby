@@ -20,7 +20,7 @@ const secureStoreAdapter = {
 };
 
 // ---------------------------------------------------------------------------
-// Environment variables — must be set in .env (see .env.example)
+// Environment variables — must be set in .env
 // ---------------------------------------------------------------------------
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;

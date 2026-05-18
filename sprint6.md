@@ -262,7 +262,7 @@ hooks/
   useAIChat.ts
   useAIDailySummary.ts
 
-.env.example            — Updated with ANTHROPIC_API_KEY and SMS placeholder
+.env                    — Updated with ANTHROPIC_API_KEY and SMS placeholder
 ```
 
 No new tables, no new migrations.

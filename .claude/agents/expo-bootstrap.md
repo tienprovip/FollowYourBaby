@@ -34,15 +34,15 @@ Initialize a brand-new Expo managed-workflow project that matches the structure 
 9. `lib/queryClient.ts` — TanStack QueryClient with sensible defaults (staleTime 60s, retry 1)
 10. `lib/constants.ts` — color tokens, risk levels, app metadata
 11. `app/_layout.tsx` — RootLayout wrapping QueryClientProvider, SafeAreaProvider, Stack from expo-router
-12. `.env.example` matching the keys in CLAUDE.md
-13. `.gitignore` covering `node_modules`, `.env*`, `.expo`, `dist`, `web-build`
+12. `.env` matching the keys in CLAUDE.md
+13. `.gitignore` covering `node_modules`, `.env`, `.expo`, `dist`, `web-build`
 14. `README.md` (only if user requests — CLAUDE.md says don't auto-create docs)
 
 ## Conventions (must follow)
 - TypeScript strict, no `any` — use `unknown` or specific types
 - File naming: components PascalCase, hooks `use*`, stores `*Store`, utilities camelCase
 - All UI text starts in Vietnamese (the project's primary language)
-- Never commit `.env`; only `.env.example`
+- Never commit `.env`
 
 ## How to work
 1. First run `ls` to confirm the repo state. If `package.json` already exists, ask the user before overwriting.

@@ -505,8 +505,7 @@ cd FollowYourBaby
 npm install
 
 # Tạo file env
-cp .env.example .env
-# Điền các biến bên dưới vào .env
+# Điền các biến vào .env
 
 # Chạy app
 npx expo start

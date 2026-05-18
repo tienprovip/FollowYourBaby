@@ -34,7 +34,7 @@ Under `supabase/functions/`, server-only secrets via `Deno.env.get(...)` are fin
 
 ## Other places to check
 
-- `.env*` files committed to git (only `.env.example` should be tracked).
+- `.env` files committed to git (should never be tracked).
 - `app.json` / `app.config.js` — anything under `extra` is bundled into the client; treat like `EXPO_PUBLIC_*`.
 - `eas.json` — `env` blocks are baked into builds; secrets here leak into the binary.
 - README / docs / CLAUDE.md — placeholder keys should be `<...>` not real values.

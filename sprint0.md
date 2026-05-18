@@ -25,7 +25,7 @@ Tạo skeleton Expo managed-workflow đúng chuẩn CLAUDE.md để các agent t
 - `metro.config.js` — withNativeWind wrapper
 - `tailwind.config.js` — bảng màu pastel (rose, mint, cream, soft-blue) phù hợp mẹ bầu/phụ huynh
 - `global.css` — Tailwind directives
-- `.env.example`, `.gitignore`, `.prettierrc`, `.eslintrc.js`
+- `.env`, `.gitignore`, `.prettierrc`, `.eslintrc.js`
 
 **Cấu trúc thư mục:**
 ```
@@ -173,7 +173,7 @@ Xây dựng bộ component dùng chung để các feature agent import thay vì 
 
 ## Những gì CẦN làm trước khi chạy app
 
-1. **Copy `.env.example` → `.env`** và điền:
+1. **Điền các biến vào `.env`:**
    ```
    EXPO_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
    EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-key>

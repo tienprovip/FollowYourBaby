@@ -91,7 +91,7 @@ Các nút Google / Apple / Facebook hiện tại là **stub** — nhấn vào hi
 
 ## Cấu hình cần làm trước khi test
 
-1. Tạo file `.env` từ `.env.example` và điền:
+1. Điền các biến vào `.env`:
    ```
    EXPO_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
    EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
