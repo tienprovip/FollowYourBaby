@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import {
+  Image,
+  ImageSourcePropType,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -11,16 +14,19 @@ import { useRouter } from 'expo-router';
 import { JOURNEY } from '@/lib/constants';
 import type { Journey } from '@/lib/constants';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import Stepper from '@/components/ui/Stepper';
-import Button from '@/components/ui/Button';
 
-// ---------------------------------------------------------------------------
-// Journey card data
-// ---------------------------------------------------------------------------
+const BRAND_NAVY = '#1F2B5B';
+const BRAND_PINK = '#F45B7F';
+
+const ONBOARDING_IMAGES = {
+  pregnant: require('../../assets/images/intro/intro-pregnancy.png'),
+  baby: require('../../assets/images/intro/intro-baby.png'),
+  family: require('../../assets/images/intro/intro-family.png'),
+} satisfies Record<string, ImageSourcePropType>;
 
 interface JourneyOption {
   key: Journey;
-  icon: string;
+  image: ImageSourcePropType;
   title: string;
   description: string;
 }
@@ -28,27 +34,48 @@ interface JourneyOption {
 const JOURNEY_OPTIONS: JourneyOption[] = [
   {
     key: JOURNEY.PREGNANT,
-    icon: 'O',
-    title: 'Mang thai',
-    description: 'Theo dõi thai kỳ, lịch khám, thai máy',
+    image: ONBOARDING_IMAGES.pregnant,
+    title: 'Đang mang bầu',
+    description: 'Theo dõi thai kỳ và nhận kiến thức cho mẹ bầu',
   },
   {
     key: JOURNEY.HAS_BABY,
-    icon: 'B',
-    title: 'Có em bé',
-    description: 'Theo dõi bú, ngủ, tã và phát triển',
+    image: ONBOARDING_IMAGES.baby,
+    title: 'Đã có em bé',
+    description: 'Theo dõi sự phát triển và chăm sóc bé yêu',
   },
   {
     key: JOURNEY.MULTIPLE,
-    icon: 'M',
-    title: 'Nhiều bé',
-    description: 'Quản lý nhiều bé hoặc sinh đôi',
+    image: ONBOARDING_IMAGES.family,
+    title: 'Nhiều em bé',
+    description: 'Tôi đang chăm sóc nhiều hơn một bé',
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Journey card
-// ---------------------------------------------------------------------------
+function OnboardingStepper({ currentStep }: { currentStep: number }) {
+  return (
+    <View style={styles.stepper}>
+      {[0, 1, 2].map((step, index) => (
+        <React.Fragment key={step}>
+          <View
+            style={[
+              styles.stepDot,
+              step === currentStep ? styles.stepDotActive : styles.stepDotInactive,
+            ]}
+          />
+          {index < 2 && (
+            <View
+              style={[
+                styles.stepLine,
+                index < currentStep ? styles.stepLineActive : styles.stepLineInactive,
+              ]}
+            />
+          )}
+        </React.Fragment>
+      ))}
+    </View>
+  );
+}
 
 interface JourneyCardProps {
   option: JourneyOption;
@@ -63,74 +90,30 @@ function JourneyCard({ option, selected, onPress }: JourneyCardProps) {
       accessibilityRole="radio"
       accessibilityLabel={option.title}
       accessibilityState={{ selected }}
-      className={[
-        'flex-row items-center rounded-2xl px-5 py-5 mb-4 border-2 min-h-[96px]',
-        selected
-          ? 'border-rose-500 bg-rose-50'
-          : 'border-rose-100 bg-white',
-      ].join(' ')}
+      style={[styles.journeyCard, selected && styles.journeyCardSelected]}
     >
-      {/* Icon placeholder circle */}
-      <View
-        className={[
-          'w-14 h-14 rounded-2xl items-center justify-center mr-4',
-          selected ? 'bg-rose-500' : 'bg-rose-100',
-        ].join(' ')}
-      >
-        <Text
-          className={[
-            'text-2xl font-bold',
-            selected ? 'text-white' : 'text-rose-400',
-          ].join(' ')}
-        >
-          {option.icon}
-        </Text>
+      <Image source={option.image} resizeMode="contain" style={styles.journeyImage} />
+
+      <View style={styles.journeyText}>
+        <Text style={styles.journeyTitle}>{option.title}</Text>
+        <Text style={styles.journeyDescription}>{option.description}</Text>
       </View>
 
-      {/* Text block */}
-      <View className="flex-1">
-        <Text
-          className={[
-            'text-lg font-bold mb-1',
-            selected ? 'text-rose-600' : 'text-gray-900',
-          ].join(' ')}
-        >
-          {option.title}
-        </Text>
-        <Text className="text-sm text-gray-500 leading-5">
-          {option.description}
-        </Text>
-      </View>
-
-      {/* Selection indicator */}
-      <View
-        className={[
-          'w-6 h-6 rounded-full border-2 items-center justify-center ml-3',
-          selected ? 'border-rose-500 bg-rose-500' : 'border-rose-200 bg-white',
-        ].join(' ')}
-      >
-        {selected && (
-          <Text className="text-white text-xs font-bold">v</Text>
-        )}
+      <View style={[styles.radio, selected && styles.radioSelected]}>
+        {selected ? <Text style={styles.radioCheck}>✓</Text> : null}
       </View>
     </Pressable>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
 
 export default function JourneyScreen() {
   const router = useRouter();
   const setJourney = useOnboardingStore((s) => s.setJourney);
   const storedJourney = useOnboardingStore((s) => s.journey);
 
-  const [selected, setSelected] = useState<Journey | null>(storedJourney);
-
-  function handleSelect(j: Journey) {
-    setSelected(j);
-  }
+  const [selected, setSelected] = useState<Journey | null>(
+    storedJourney ?? JOURNEY.PREGNANT,
+  );
 
   function handleContinue() {
     if (!selected) return;
@@ -139,49 +122,208 @@ export default function JourneyScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#fffdf7]">
+    <SafeAreaView style={styles.screen}>
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-6 pt-8 pb-10"
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Progress stepper */}
-        <Stepper steps={3} currentStep={0} className="mb-10" />
+        <View style={styles.topRow}>
+          <Text style={styles.backIcon}>{'<'}</Text>
+          <OnboardingStepper currentStep={0} />
+          <View style={styles.backSpacer} />
+        </View>
 
-        {/* Header */}
-        <View className="mb-8">
-          <Text className="text-2xl font-bold text-gray-900 mb-2">
-            Chào mừng bạn!
-          </Text>
-          <Text className="text-base text-gray-500 leading-6">
-            Chỉ vài bước nhỏ thôi nhé. Trước tiên, hành trình của bạn là gì?
+        <View style={styles.header}>
+          <Text style={styles.heading}>Chào mừng bạn!</Text>
+          <Text style={styles.subheading}>
+            Hãy cho chúng tôi biết tình trạng hiện tại để cá nhân hóa trải nghiệm phù hợp với bạn nhé.
           </Text>
         </View>
 
-        {/* Journey cards */}
-        <View accessibilityRole="radiogroup" accessibilityLabel="Chọn hành trình">
+        <View accessibilityRole="radiogroup" accessibilityLabel="Chọn trạng thái">
           {JOURNEY_OPTIONS.map((option) => (
             <JourneyCard
               key={option.key}
               option={option}
               selected={selected === option.key}
-              onPress={() => handleSelect(option.key)}
+              onPress={() => setSelected(option.key)}
             />
           ))}
         </View>
       </ScrollView>
 
-      {/* Bottom CTA — fixed above keyboard */}
-      <View className="px-6 pb-8 pt-3 bg-[#fffdf7] border-t border-rose-50">
-        <Button
-          label="Tiếp tục"
-          variant="primary"
-          size="lg"
-          className="w-full"
-          disabled={!selected}
+      <View style={styles.footer}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Tiếp tục"
           onPress={handleContinue}
-        />
+          style={styles.primaryButton}
+        >
+          <Text style={styles.primaryButtonText}>Tiếp tục</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#FFF8F6',
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 112,
+  },
+  topRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 28,
+  },
+  backIcon: {
+    color: BRAND_NAVY,
+    fontSize: 34,
+    lineHeight: 34,
+    width: 36,
+  },
+  backSpacer: {
+    width: 36,
+  },
+  stepper: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  stepDot: {
+    borderRadius: 999,
+    height: 12,
+    width: 12,
+  },
+  stepDotActive: {
+    backgroundColor: BRAND_PINK,
+  },
+  stepDotInactive: {
+    backgroundColor: '#D8D2D6',
+  },
+  stepLine: {
+    height: 2,
+    width: 54,
+  },
+  stepLineActive: {
+    backgroundColor: '#F8A4B7',
+  },
+  stepLineInactive: {
+    backgroundColor: '#E4DEE2',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  heading: {
+    color: BRAND_NAVY,
+    fontFamily: 'Nunito',
+    fontSize: 24,
+    fontWeight: '800',
+    lineHeight: 31,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  subheading: {
+    color: '#2E3158',
+    fontSize: 15,
+    lineHeight: 24,
+    maxWidth: 318,
+    textAlign: 'center',
+  },
+  journeyCard: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#EFE3E8',
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 128,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    shadowColor: '#8A5160',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 14,
+  },
+  journeyCardSelected: {
+    borderColor: BRAND_PINK,
+    shadowColor: BRAND_PINK,
+    shadowOpacity: 0.12,
+  },
+  journeyImage: {
+    height: 96,
+    marginRight: 16,
+    width: 110,
+  },
+  journeyText: {
+    flex: 1,
+  },
+  journeyTitle: {
+    color: BRAND_NAVY,
+    fontSize: 18,
+    fontWeight: '800',
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  journeyDescription: {
+    color: '#3F4166',
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  radio: {
+    alignItems: 'center',
+    borderColor: '#DDD5DC',
+    borderRadius: 999,
+    borderWidth: 1.5,
+    height: 24,
+    justifyContent: 'center',
+    marginLeft: 12,
+    width: 24,
+  },
+  radioSelected: {
+    backgroundColor: BRAND_PINK,
+    borderColor: BRAND_PINK,
+  },
+  radioCheck: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+    lineHeight: 20,
+  },
+  footer: {
+    backgroundColor: '#FFF8F6',
+    bottom: 0,
+    left: 0,
+    paddingBottom: 34,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    position: 'absolute',
+    right: 0,
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: BRAND_PINK,
+    borderRadius: 18,
+    height: 56,
+    justifyContent: 'center',
+    shadowColor: BRAND_PINK,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '800',
+  },
+});

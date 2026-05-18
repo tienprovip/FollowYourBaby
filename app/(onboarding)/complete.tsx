@@ -2,165 +2,270 @@ import React from 'react';
 import {
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { useOnboardingStore } from '@/stores/onboardingStore';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import Stepper from '@/components/ui/Stepper';
-import Button from '@/components/ui/Button';
 
-// ---------------------------------------------------------------------------
-// Summary helpers
-// ---------------------------------------------------------------------------
+const BRAND_NAVY = '#1F2B5B';
+const BRAND_PINK = '#F45B7F';
 
-function buildSummary(
-  journey: string | null,
-  babyName: string,
-  dueDate: string | null,
-  birthDate: string | null,
-): string {
-  if (journey === 'pregnant') {
-    if (dueDate) {
-      const [year, month, day] = dueDate.split('-');
-      return `Chúng tôi sẽ đồng hành cùng bạn trong hành trình mang thai, với ngày dự sinh ${day}/${month}/${year}.`;
-    }
-    return 'Chúng tôi sẽ đồng hành cùng bạn trong suốt hành trình mang thai.';
-  }
-
-  const name = babyName.trim() || 'em bé của bạn';
-
-  if (journey === 'multiple') {
-    return `Sẵn sàng theo dõi hành trình phát triển của ${name} và các bé khác!`;
-  }
-
-  if (birthDate) {
-    const [year, month, day] = birthDate.split('-');
-    return `Sẵn sàng đồng hành cùng ${name} (sinh ngày ${day}/${month}/${year}) mỗi ngày!`;
-  }
-
-  return `Sẵn sàng đồng hành cùng ${name} mỗi ngày!`;
+function OnboardingStepper({ currentStep }: { currentStep: number }) {
+  return (
+    <View style={styles.stepper}>
+      {[0, 1, 2].map((step, index) => (
+        <React.Fragment key={step}>
+          <View
+            style={[
+              styles.stepDot,
+              step === currentStep ? styles.stepDotActive : styles.stepDotInactive,
+            ]}
+          />
+          {index < 2 && (
+            <View
+              style={[
+                styles.stepLine,
+                index < currentStep ? styles.stepLineActive : styles.stepLineInactive,
+              ]}
+            />
+          )}
+        </React.Fragment>
+      ))}
+    </View>
+  );
 }
 
-function journeyIllustration(journey: string | null): string {
-  switch (journey) {
-    case 'pregnant':
-      return 'O';
-    case 'multiple':
-      return 'BB';
-    default:
-      return 'B';
-  }
-}
+function CompleteIllustration() {
+  return (
+    <Svg width={250} height={250} viewBox="0 0 250 250">
+      <Rect x="37" y="48" width="9" height="22" rx="2" fill="#8DDCCB" transform="rotate(-54 41 59)" />
+      <Rect x="206" y="48" width="9" height="22" rx="2" fill="#F8A4B7" transform="rotate(39 210 59)" />
+      <Rect x="66" y="32" width="8" height="8" rx="1" fill="#F6C37B" transform="rotate(-13 70 36)" />
+      <Rect x="183" y="30" width="9" height="9" rx="1" fill="#F6C37B" transform="rotate(34 187 34)" />
+      <Rect x="25" y="136" width="18" height="7" rx="2" fill="#F6C37B" transform="rotate(9 34 139)" />
+      <Rect x="214" y="128" width="8" height="22" rx="2" fill="#8DDCCB" transform="rotate(17 218 139)" />
+      <Rect x="56" y="177" width="8" height="19" rx="2" fill="#F8A4B7" transform="rotate(-49 60 186)" />
+      <Rect x="191" y="177" width="18" height="7" rx="2" fill="#8DDCCB" transform="rotate(-9 200 180)" />
+      <Rect x="124" y="45" width="6" height="6" rx="1" fill="#F7D46A" transform="rotate(42 127 48)" />
+      <Rect x="83" y="65" width="7" height="7" rx="1" fill="#A9D6FF" transform="rotate(24 86 68)" />
+      <Rect x="164" y="67" width="7" height="7" rx="1" fill="#8DDCCB" transform="rotate(45 168 70)" />
 
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
+      <Circle cx="125" cy="124" r="72" fill="#FFEAF0" />
+      <Circle cx="125" cy="124" r="58" fill="#FFD5E0" />
+      <Circle cx="125" cy="124" r="47" fill={BRAND_PINK} />
+      <Path
+        d="M99 123l18 18 38-45"
+        stroke="#FFFFFF"
+        strokeWidth="12"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+
+      <Circle cx="169" cy="164" r="28" fill="#FF91AA" />
+      <Circle cx="158" cy="158" r="3.2" fill="#603447" />
+      <Circle cx="181" cy="158" r="3.2" fill="#603447" />
+      <Path d="M160 171c7 7 18 7 25 0" stroke="#603447" strokeWidth="3" strokeLinecap="round" fill="none" />
+      <Path d="M169 151c-5-10-20-9-20 4 0 14 20 23 20 23s20-9 20-23c0-13-15-14-20-4Z" fill="#FF91AA" />
+    </Svg>
+  );
+}
 
 export default function CompleteScreen() {
   const router = useRouter();
-  const store = useOnboardingStore();
   const { submit, isSubmitting, submitError } = useOnboarding();
-
-  const { journey, babyName, dueDate, birthDate } = store;
-
-  const summary = buildSummary(journey, babyName, dueDate, birthDate);
-  const illustration = journeyIllustration(journey);
-
-  function handleBack() {
-    router.back();
-  }
 
   async function handleEnter() {
     await submit();
-    // Navigation to /(tabs)/ is handled inside submit() on success
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#fffdf7]">
+    <SafeAreaView style={styles.screen}>
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-6 pt-8 pb-10"
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Progress stepper */}
-        <Stepper steps={3} currentStep={2} className="mb-10" />
+        <View style={styles.topRow}>
+          <View style={styles.backSpacer} />
+          <OnboardingStepper currentStep={2} />
+          <View style={styles.backSpacer} />
+        </View>
 
-        {/* Back button */}
-        <Pressable
-          onPress={handleBack}
-          accessibilityRole="button"
-          accessibilityLabel="Quay lại"
-          className="mb-5 self-start py-1"
-        >
-          <Text className="text-rose-500 text-sm font-medium">
-            Quay lại
-          </Text>
-        </Pressable>
-
-        {/* Illustration */}
-        <View className="items-center mt-4 mb-8">
-          <View className="w-28 h-28 rounded-full bg-rose-100 items-center justify-center mb-4">
-            <Text className="text-5xl font-bold text-rose-400">
-              {illustration}
-            </Text>
-          </View>
-          <Text className="text-2xl font-bold text-gray-900 text-center mb-3">
-            Tất cả đã sẵn sàng!
-          </Text>
-          <Text className="text-base text-gray-500 text-center leading-6 px-4">
-            {summary}
+        <View style={styles.body}>
+          <CompleteIllustration />
+          <Text style={styles.heading}>Hoàn tất!</Text>
+          <Text style={styles.subheading}>
+            Cảm ơn bạn đã chia sẻ thông tin. FollowYourBaby sẽ đồng hành cùng bạn trên hành trình tuyệt vời này!
           </Text>
         </View>
 
-        {/* Feature highlights */}
-        <View className="bg-white rounded-2xl border border-rose-100 px-5 py-4 mb-6">
-          <Text className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
-            Bạn sẽ có
-          </Text>
-          {[
-            'Theo dõi hàng ngày phù hợp với hành trình của bạn',
-            'Trợ lý AI tư vấn cá nhân hóa, 24/7',
-            'Nhắc việc thông minh: khám, tiêm phòng, ăn, ngủ',
-            'Biểu đồ phát triển và báo cáo tổng hợp',
-          ].map((item) => (
-            <View key={item} className="flex-row items-start mb-2 last:mb-0">
-              <View className="w-5 h-5 rounded-full bg-rose-500 items-center justify-center mr-3 mt-0.5 shrink-0">
-                <Text className="text-white text-xs font-bold">v</Text>
-              </View>
-              <Text className="text-sm text-gray-600 leading-5 flex-1">{item}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Error state */}
         {submitError ? (
-          <View className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
-            <Text
-              className="text-red-600 text-sm"
-              accessibilityRole="alert"
-            >
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText} accessibilityRole="alert">
               {submitError}
             </Text>
           </View>
         ) : null}
       </ScrollView>
 
-      {/* Bottom CTA */}
-      <View className="px-6 pb-8 pt-3 bg-[#fffdf7] border-t border-rose-50">
-        <Button
-          label="Vào app"
-          variant="primary"
-          size="lg"
-          className="w-full"
-          loading={isSubmitting}
-          disabled={isSubmitting}
+      <View style={styles.footer}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Bắt đầu trải nghiệm"
           onPress={handleEnter}
-        />
+          disabled={isSubmitting}
+          style={[styles.primaryButton, isSubmitting && styles.disabledButton]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {isSubmitting ? 'Đang lưu...' : 'Bắt đầu trải nghiệm'}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Vào trang chủ"
+          onPress={() => router.replace('/(tabs)')}
+          disabled={isSubmitting}
+          style={styles.secondaryButton}
+        >
+          <Text style={styles.secondaryButtonText}>Vào trang chủ</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#FFF8F6',
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 178,
+  },
+  topRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 42,
+  },
+  backSpacer: {
+    width: 36,
+  },
+  stepper: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  stepDot: {
+    borderRadius: 999,
+    height: 12,
+    width: 12,
+  },
+  stepDotActive: {
+    backgroundColor: BRAND_PINK,
+  },
+  stepDotInactive: {
+    backgroundColor: '#D8D2D6',
+  },
+  stepLine: {
+    height: 2,
+    width: 54,
+  },
+  stepLineActive: {
+    backgroundColor: '#F8A4B7',
+  },
+  stepLineInactive: {
+    backgroundColor: '#E4DEE2',
+  },
+  body: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    paddingBottom: 34,
+  },
+  heading: {
+    color: BRAND_NAVY,
+    fontSize: 27,
+    fontWeight: '900',
+    lineHeight: 34,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  subheading: {
+    color: '#2E3158',
+    fontSize: 15,
+    lineHeight: 24,
+    marginTop: 14,
+    maxWidth: 315,
+    textAlign: 'center',
+  },
+  errorBox: {
+    backgroundColor: '#FFF0F1',
+    borderColor: '#FFC8D3',
+    borderRadius: 14,
+    borderWidth: 1,
+    marginTop: 20,
+    padding: 14,
+  },
+  errorText: {
+    color: '#C73558',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  footer: {
+    backgroundColor: '#FFF8F6',
+    bottom: 0,
+    left: 0,
+    paddingBottom: 34,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    position: 'absolute',
+    right: 0,
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: BRAND_PINK,
+    borderRadius: 18,
+    height: 56,
+    justifyContent: 'center',
+    shadowColor: BRAND_PINK,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+  },
+  disabledButton: {
+    opacity: 0.55,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  secondaryButton: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#F4B9C8',
+    borderRadius: 18,
+    borderWidth: 1,
+    height: 52,
+    justifyContent: 'center',
+    marginTop: 14,
+  },
+  secondaryButtonText: {
+    color: BRAND_PINK,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+});

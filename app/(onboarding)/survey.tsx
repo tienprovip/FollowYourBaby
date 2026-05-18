@@ -1,36 +1,23 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import { useOnboardingStore } from '@/stores/onboardingStore';
-import Stepper from '@/components/ui/Stepper';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import DateField from '@/components/ui/DateField';
+import Input from '@/components/ui/Input';
 import SegmentedControl from '@/components/ui/SegmentedControl';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const PREGNANCY_CONCERNS = [
-  'Buồn nôn',
-  'Mệt mỏi',
-  'Tăng cân',
-  'Thai máy',
-  'Dinh dưỡng',
-  'Chuẩn bị sinh',
-  'Khám thai',
-  'Tâm trạng',
-];
+const BRAND_NAVY = '#1F2B5B';
+const BRAND_PINK = '#F45B7F';
 
 const GENDER_OPTIONS = [
   { key: 'male', label: 'Bé trai' },
@@ -38,321 +25,539 @@ const GENDER_OPTIONS = [
   { key: 'unknown', label: 'Chưa biết' },
 ];
 
-// ---------------------------------------------------------------------------
-// Concern chip
-// ---------------------------------------------------------------------------
+const PREGNANCY_ORDER_OPTIONS = [
+  { key: '1', label: '1' },
+  { key: '2', label: '2' },
+  { key: '3', label: '3' },
+  { key: '4+', label: 'Từ 4 trở lên' },
+];
 
-interface ConcernChipProps {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
+function toDateInput(date: Date): string {
+  return date.toISOString().split('T')[0];
 }
 
-function ConcernChip({ label, selected, onPress }: ConcernChipProps) {
+function defaultDueDateFromWeek(week: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + Math.max(1, 40 - week) * 7);
+  return toDateInput(d);
+}
+
+function OnboardingStepper({ currentStep }: { currentStep: number }) {
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="checkbox"
-      accessibilityLabel={label}
-      accessibilityState={{ checked: selected }}
-      className={[
-        'px-4 py-2 rounded-full mr-2 mb-2 border',
-        selected
-          ? 'bg-rose-500 border-rose-500'
-          : 'bg-white border-rose-200',
-      ].join(' ')}
-    >
-      <Text
-        className={[
-          'text-sm font-medium',
-          selected ? 'text-white' : 'text-gray-700',
-        ].join(' ')}
-      >
-        {label}
-      </Text>
-    </Pressable>
+    <View style={styles.stepper}>
+      {[0, 1, 2].map((step, index) => (
+        <React.Fragment key={step}>
+          <View
+            style={[
+              styles.stepDot,
+              step === currentStep ? styles.stepDotActive : styles.stepDotInactive,
+            ]}
+          />
+          {index < 2 && (
+            <View
+              style={[
+                styles.stepLine,
+                index < currentStep ? styles.stepLineActive : styles.stepLineInactive,
+              ]}
+            />
+          )}
+        </React.Fragment>
+      ))}
+    </View>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Pregnancy survey section
-// ---------------------------------------------------------------------------
-
-interface PregnancySurveyProps {
-  dueDate: string | null;
-  concerns: string[];
-  onDueDateChange: (d: string) => void;
-  onToggleConcern: (c: string) => void;
-  dueDateError: string | null;
+function SectionCard({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.sectionCard}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionIcon}>
+          <Text style={styles.sectionIconText}>{icon}</Text>
+        </View>
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
+      {children}
+    </View>
+  );
 }
 
-function PregnancySurvey({
-  dueDate,
-  concerns,
-  onDueDateChange,
-  onToggleConcern,
-  dueDateError,
-}: PregnancySurveyProps) {
-  const dueDateValue = dueDate ? new Date(dueDate) : undefined;
+function WeekSelector({
+  week,
+  onChange,
+}: {
+  week: number;
+  onChange: (week: number) => void;
+}) {
+  const progress = `${((week - 1) / 39) * 100}%` as const;
 
   return (
     <View>
-      <Text className="text-lg font-bold text-gray-900 mb-1">
-        Ngay dự sinh của bé
-      </Text>
-      <Text className="text-sm text-gray-500 mb-4">
-        Dùng để tính tuần thai và nhắc lịch khám.
-      </Text>
+      <View style={styles.weekRow}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Giảm tuần thai"
+          onPress={() => onChange(Math.max(1, week - 1))}
+          style={styles.weekStepButton}
+        >
+          <Text style={styles.weekStepText}>−</Text>
+        </Pressable>
+        <View style={styles.weekBadge}>
+          <Text style={styles.weekBadgeText}>{week} tuần</Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Tăng tuần thai"
+          onPress={() => onChange(Math.min(40, week + 1))}
+          style={styles.weekStepButton}
+        >
+          <Text style={styles.weekStepText}>+</Text>
+        </Pressable>
+      </View>
 
-      <DateField
-        label="Ngày dự sinh"
-        placeholder="Chọn ngày dự sinh"
-        value={dueDateValue}
-        onChange={(d) => onDueDateChange(d.toISOString().split('T')[0])}
-        minimumDate={new Date()}
-        error={dueDateError ?? undefined}
-        className="mb-6"
-      />
-
-      <Text className="text-lg font-bold text-gray-900 mb-1">
-        Bạn quan tâm điều gì?
-      </Text>
-      <Text className="text-sm text-gray-500 mb-4">
-        Chọn những điều bạn muốn theo dõi (có thể chọn nhiều).
-      </Text>
-
-      <View className="flex-row flex-wrap">
-        {PREGNANCY_CONCERNS.map((concern) => (
-          <ConcernChip
-            key={concern}
-            label={concern}
-            selected={concerns.includes(concern)}
-            onPress={() => onToggleConcern(concern)}
-          />
-        ))}
+      <View style={styles.track}>
+        <View style={[styles.trackFill, { width: progress }]} />
+        <View style={[styles.trackThumb, { left: progress }]} />
+      </View>
+      <View style={styles.trackLabels}>
+        <Text style={styles.trackLabel}>1 tuần</Text>
+        <Text style={styles.trackLabel}>40 tuần</Text>
       </View>
     </View>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Baby survey section
-// ---------------------------------------------------------------------------
-
-interface BabySurveyProps {
-  babyName: string;
-  birthDate: string | null;
-  gender: 'male' | 'female' | 'unknown';
-  birthWeightGrams: number | null;
-  isMultiple: boolean;
-  onBabyNameChange: (name: string) => void;
-  onBirthDateChange: (d: string) => void;
-  onGenderChange: (g: 'male' | 'female' | 'unknown') => void;
-  onBirthWeightChange: (w: number | null) => void;
-  birthDateError: string | null;
-}
-
-function BabySurvey({
-  babyName,
-  birthDate,
-  gender,
-  birthWeightGrams,
-  isMultiple,
-  onBabyNameChange,
-  onBirthDateChange,
-  onGenderChange,
-  onBirthWeightChange,
-  birthDateError,
-}: BabySurveyProps) {
-  const birthDateValue = birthDate ? new Date(birthDate) : undefined;
-
-  function handleWeightText(text: string) {
-    const parsed = parseInt(text, 10);
-    onBirthWeightChange(isNaN(parsed) ? null : parsed);
-  }
-
-  return (
-    <View>
-      {isMultiple && (
-        <View className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 mb-5">
-          <Text className="text-sm text-rose-700">
-            Bạn có thể thêm bé thứ hai sau khi hoàn tất onboarding.
-          </Text>
-        </View>
-      )}
-
-      <Input
-        label="Tên bé"
-        placeholder="Ví dụ: Bé Na, Bé Minh..."
-        value={babyName}
-        onChangeText={onBabyNameChange}
-        className="mb-4"
-      />
-
-      <DateField
-        label="Ngày sinh"
-        placeholder="Chọn ngày sinh"
-        value={birthDateValue}
-        onChange={(d) => onBirthDateChange(d.toISOString().split('T')[0])}
-        maximumDate={new Date()}
-        error={birthDateError ?? undefined}
-        className="mb-4"
-      />
-
-      <Text className="text-slate-700 text-sm font-semibold mb-1">
-        Giới tính
-      </Text>
-      <SegmentedControl
-        options={GENDER_OPTIONS}
-        selectedKey={gender}
-        onChange={(key) => onGenderChange(key as 'male' | 'female' | 'unknown')}
-        className="mb-4"
-      />
-
-      <Input
-        label="Cân nặng lúc sinh (gram) — tùy chọn"
-        placeholder="Ví dụ: 3200"
-        type="numeric"
-        value={birthWeightGrams !== null ? String(birthWeightGrams) : ''}
-        onChangeText={handleWeightText}
-        helperText="Dùng để vẽ biểu đồ tăng trưởng."
-        className="mb-2"
-      />
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
-
 export default function SurveyScreen() {
   const router = useRouter();
-  const store = useOnboardingStore();
-
   const {
     journey,
     dueDate,
-    concerns,
     babyName,
     birthDate,
     gender,
     birthWeightGrams,
     setDueDate,
-    toggleConcern,
     setBabyInfo,
-  } = store;
+  } = useOnboardingStore();
 
+  const [week, setWeek] = useState(22);
+  const [pregnancyOrder, setPregnancyOrder] = useState('1');
+  const [region, setRegion] = useState('Hà Nội');
   const [dueDateError, setDueDateError] = useState<string | null>(null);
   const [birthDateError, setBirthDateError] = useState<string | null>(null);
 
-  const isPregnant = journey === 'pregnant';
-  const isMultiple = journey === 'multiple';
-
-  function validate(): boolean {
-    let valid = true;
-
-    if (isPregnant) {
-      if (!dueDate) {
-        setDueDateError('Vui lòng chọn ngày dự sinh.');
-        valid = false;
-      } else {
-        setDueDateError(null);
-      }
-    } else {
-      if (!birthDate) {
-        setBirthDateError('Vui lòng chọn ngày sinh của bé.');
-        valid = false;
-      } else {
-        setBirthDateError(null);
-      }
-    }
-
-    return valid;
-  }
+  const isPregnant = journey !== 'has_baby' && journey !== 'multiple';
+  const currentDueDate = useMemo(() => {
+    if (dueDate) return new Date(dueDate);
+    return new Date(defaultDueDateFromWeek(week));
+  }, [dueDate, week]);
+  const currentBirthDate = birthDate ? new Date(birthDate) : undefined;
 
   function handleContinue() {
-    if (!validate()) return;
+    if (isPregnant) {
+      if (!dueDate) {
+        setDueDate(defaultDueDateFromWeek(week));
+      }
+      setDueDateError(null);
+      router.push('/(onboarding)/complete');
+      return;
+    }
+
+    if (!birthDate) {
+      setBirthDateError('Chọn ngày sinh của bé nhé.');
+      return;
+    }
+
+    setBirthDateError(null);
     router.push('/(onboarding)/complete');
   }
 
-  function handleBack() {
-    router.back();
+  function handleWeightText(text: string) {
+    const parsed = Number.parseInt(text, 10);
+    setBabyInfo({ birthWeightGrams: Number.isNaN(parsed) ? null : parsed });
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#fffdf7]">
+    <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView
-        className="flex-1"
+        style={styles.keyboard}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          className="flex-1"
-          contentContainerClassName="px-6 pt-8 pb-10"
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Progress stepper */}
-          <Stepper steps={3} currentStep={1} className="mb-10" />
+          <View style={styles.topRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Quay lại"
+              onPress={() => router.back()}
+              hitSlop={12}
+            >
+              <Text style={styles.backIcon}>{'<'}</Text>
+            </Pressable>
+            <OnboardingStepper currentStep={1} />
+            <View style={styles.backSpacer} />
+          </View>
 
-          {/* Back button */}
-          <Pressable
-            onPress={handleBack}
-            accessibilityRole="button"
-            accessibilityLabel="Quay lại"
-            className="mb-5 self-start py-1"
-          >
-            <Text className="text-rose-500 text-sm font-medium">
-              Quay lại
-            </Text>
-          </Pressable>
-
-          {/* Header */}
-          <View className="mb-6">
-            <Text className="text-2xl font-bold text-gray-900 mb-2">
-              {isPregnant ? 'Thông tin thai kỳ' : 'Thông tin về bé'}
-            </Text>
-            <Text className="text-base text-gray-500 leading-6">
-              Giúp chúng tôi cá nhân hóa trải nghiệm cho bạn.
+          <View style={styles.header}>
+            <Text style={styles.heading}>Một vài thông tin về bạn</Text>
+            <Text style={styles.subheading}>
+              Thông tin này giúp chúng tôi đồng hành và hỗ trợ bạn tốt hơn.
             </Text>
           </View>
 
-          {/* Dynamic survey content */}
           {isPregnant ? (
-            <PregnancySurvey
-              dueDate={dueDate}
-              concerns={concerns}
-              onDueDateChange={setDueDate}
-              onToggleConcern={toggleConcern}
-              dueDateError={dueDateError}
-            />
+            <>
+              <SectionCard title="Thông tin thai kỳ" icon="♡">
+                <DateField
+                  label="Ngày dự sinh (EDD)"
+                  value={currentDueDate}
+                  onChange={(d) => {
+                    setDueDate(toDateInput(d));
+                    setDueDateError(null);
+                  }}
+                  minimumDate={new Date()}
+                  error={dueDateError ?? undefined}
+                  className="mb-5"
+                />
+
+                <Text style={styles.fieldLabel}>Bạn đang ở tuần thứ bao nhiêu?</Text>
+                <WeekSelector week={week} onChange={setWeek} />
+
+                <Text style={[styles.fieldLabel, styles.fieldLabelSpaced]}>
+                  Đây là lần mang thai thứ mấy của bạn?
+                </Text>
+                <SegmentedControl
+                  options={PREGNANCY_ORDER_OPTIONS}
+                  selectedKey={pregnancyOrder}
+                  onChange={setPregnancyOrder}
+                />
+              </SectionCard>
+
+              <SectionCard title="Thông tin cá nhân" icon="♡">
+                <Text style={styles.fieldLabel}>Khu vực sinh sống</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Khu vực sinh sống"
+                  onPress={() => setRegion(region === 'Hà Nội' ? 'TP. Hồ Chí Minh' : 'Hà Nội')}
+                  style={styles.selectField}
+                >
+                  <Text style={styles.selectText}>{region}</Text>
+                  <Text style={styles.selectArrow}>⌄</Text>
+                </Pressable>
+              </SectionCard>
+            </>
           ) : (
-            <BabySurvey
-              babyName={babyName}
-              birthDate={birthDate}
-              gender={gender}
-              birthWeightGrams={birthWeightGrams}
-              isMultiple={isMultiple}
-              onBabyNameChange={(name) => setBabyInfo({ babyName: name })}
-              onBirthDateChange={(d) => setBabyInfo({ birthDate: d })}
-              onGenderChange={(g) => setBabyInfo({ gender: g })}
-              onBirthWeightChange={(w) => setBabyInfo({ birthWeightGrams: w })}
-              birthDateError={birthDateError}
-            />
+            <>
+              <SectionCard title="Thông tin về bé" icon="♡">
+                <Input
+                  label="Tên bé"
+                  placeholder="Ví dụ: Bé Na, Bé Minh..."
+                  value={babyName}
+                  onChangeText={(name) => setBabyInfo({ babyName: name })}
+                  className="mb-4"
+                />
+
+                <DateField
+                  label="Ngày sinh"
+                  value={currentBirthDate}
+                  placeholder="Chọn ngày sinh"
+                  onChange={(d) => {
+                    setBabyInfo({ birthDate: toDateInput(d) });
+                    setBirthDateError(null);
+                  }}
+                  maximumDate={new Date()}
+                  error={birthDateError ?? undefined}
+                  className="mb-4"
+                />
+
+                <Text style={styles.fieldLabel}>Giới tính</Text>
+                <SegmentedControl
+                  options={GENDER_OPTIONS}
+                  selectedKey={gender}
+                  onChange={(key) => setBabyInfo({ gender: key as 'male' | 'female' | 'unknown' })}
+                  className="mb-4"
+                />
+
+                <Input
+                  label="Cân nặng lúc sinh (gram)"
+                  placeholder="Ví dụ: 3200"
+                  type="numeric"
+                  value={birthWeightGrams !== null ? String(birthWeightGrams) : ''}
+                  onChangeText={handleWeightText}
+                />
+              </SectionCard>
+
+              <SectionCard title="Thông tin cá nhân" icon="♡">
+                <Text style={styles.fieldLabel}>Khu vực sinh sống</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Khu vực sinh sống"
+                  onPress={() => setRegion(region === 'Hà Nội' ? 'TP. Hồ Chí Minh' : 'Hà Nội')}
+                  style={styles.selectField}
+                >
+                  <Text style={styles.selectText}>{region}</Text>
+                  <Text style={styles.selectArrow}>⌄</Text>
+                </Pressable>
+              </SectionCard>
+            </>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Bottom CTA */}
-      <View className="px-6 pb-8 pt-3 bg-[#fffdf7] border-t border-rose-50">
-        <Button
-          label="Tiếp tục"
-          variant="primary"
-          size="lg"
-          className="w-full"
+      <View style={styles.footer}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Tiếp tục"
           onPress={handleContinue}
-        />
+          style={styles.primaryButton}
+        >
+          <Text style={styles.primaryButtonText}>Tiếp tục</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#FFF8F6',
+  },
+  keyboard: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 118,
+  },
+  topRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 28,
+  },
+  backIcon: {
+    color: BRAND_NAVY,
+    fontSize: 34,
+    lineHeight: 34,
+    width: 36,
+  },
+  backSpacer: {
+    width: 36,
+  },
+  stepper: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  stepDot: {
+    borderRadius: 999,
+    height: 12,
+    width: 12,
+  },
+  stepDotActive: {
+    backgroundColor: BRAND_PINK,
+  },
+  stepDotInactive: {
+    backgroundColor: '#D8D2D6',
+  },
+  stepLine: {
+    height: 2,
+    width: 54,
+  },
+  stepLineActive: {
+    backgroundColor: '#F8A4B7',
+  },
+  stepLineInactive: {
+    backgroundColor: '#E4DEE2',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 22,
+  },
+  heading: {
+    color: BRAND_NAVY,
+    fontSize: 24,
+    fontWeight: '800',
+    lineHeight: 31,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  subheading: {
+    color: '#2E3158',
+    fontSize: 15,
+    lineHeight: 24,
+    maxWidth: 318,
+    textAlign: 'center',
+  },
+  sectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#F2E6EA',
+    borderRadius: 18,
+    borderWidth: 1,
+    marginBottom: 14,
+    padding: 16,
+    shadowColor: '#8A5160',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 18,
+  },
+  sectionIcon: {
+    alignItems: 'center',
+    backgroundColor: '#FFE8EF',
+    borderRadius: 8,
+    height: 28,
+    justifyContent: 'center',
+    marginRight: 12,
+    width: 28,
+  },
+  sectionIconText: {
+    color: BRAND_PINK,
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  sectionTitle: {
+    color: BRAND_PINK,
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  fieldLabel: {
+    color: BRAND_NAVY,
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  fieldLabelSpaced: {
+    marginTop: 20,
+  },
+  weekRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  weekBadge: {
+    backgroundColor: BRAND_PINK,
+    borderRadius: 10,
+    marginHorizontal: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  weekBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  weekStepButton: {
+    alignItems: 'center',
+    backgroundColor: '#FFF0F4',
+    borderRadius: 999,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  weekStepText: {
+    color: BRAND_PINK,
+    fontSize: 22,
+    fontWeight: '800',
+    lineHeight: 24,
+  },
+  track: {
+    backgroundColor: '#ECE7EC',
+    borderRadius: 999,
+    height: 5,
+    marginHorizontal: 4,
+    position: 'relative',
+  },
+  trackFill: {
+    backgroundColor: BRAND_PINK,
+    borderRadius: 999,
+    height: 5,
+  },
+  trackThumb: {
+    backgroundColor: '#FFFFFF',
+    borderColor: BRAND_PINK,
+    borderRadius: 999,
+    borderWidth: 3,
+    height: 18,
+    marginLeft: -9,
+    position: 'absolute',
+    top: -6.5,
+    width: 18,
+  },
+  trackLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  trackLabel: {
+    color: '#6B6D8C',
+    fontSize: 12,
+  },
+  selectField: {
+    alignItems: 'center',
+    borderColor: '#E9DDE4',
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 48,
+    paddingHorizontal: 14,
+  },
+  selectText: {
+    color: BRAND_NAVY,
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectArrow: {
+    color: BRAND_NAVY,
+    fontSize: 20,
+    lineHeight: 20,
+  },
+  footer: {
+    backgroundColor: '#FFF8F6',
+    bottom: 0,
+    left: 0,
+    paddingBottom: 34,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    position: 'absolute',
+    right: 0,
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: BRAND_PINK,
+    borderRadius: 18,
+    height: 56,
+    justifyContent: 'center',
+    shadowColor: BRAND_PINK,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '800',
+  },
+});

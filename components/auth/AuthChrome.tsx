@@ -61,17 +61,9 @@ export function BackButton({ label = 'Quay lại', onPress }: BackButtonProps) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="mb-5 h-10 w-10 items-center justify-center rounded-full bg-white border border-brand-pink-100"
+      className="mb-5 h-10 w-10 items-center justify-center"
     >
-      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-        <Path
-          d="M19 12H5M5 12L11 18M5 12L11 6"
-          stroke="#1F2B5B"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </Svg>
+      <Text className="text-4xl font-medium leading-10 text-brand-navy">{'<'}</Text>
     </Pressable>
   );
 }
