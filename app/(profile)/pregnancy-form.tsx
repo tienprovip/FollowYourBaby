@@ -12,16 +12,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { usePregnancies } from '@/hooks/usePregnancies';
 import { Button, DateField } from '@/components/ui';
+import { toLocalDateStr, fromLocalDateStr } from '@/lib/dateUtils';
 
-function isoToDate(iso: string | null | undefined): Date | undefined {
-  if (!iso) return undefined;
-  const d = new Date(iso);
-  return isNaN(d.getTime()) ? undefined : d;
-}
-
-function dateToIso(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
+const isoToDate = fromLocalDateStr;
+const dateToIso = toLocalDateStr;
 
 const schema = z.object({
   due_date: z.date({ required_error: 'Vui lòng chọn ngày dự sinh' }),

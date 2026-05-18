@@ -304,6 +304,44 @@ export default function BabyTab() {
           </View>
           <Text className="text-brand-navy/40">›</Text>
         </TouchableOpacity>
+
+        {/* Milestones link */}
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/milestones')}
+          className="bg-white rounded-card px-4 py-3 flex-row items-center shadow-brand"
+        >
+          <Text style={{ fontSize: 20 }} className="mr-3">
+            ⭐
+          </Text>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-brand-navy">
+              Mốc phát triển
+            </Text>
+            <Text className="text-xs text-brand-navy/60">
+              Vận động, ngôn ngữ, nhận thức
+            </Text>
+          </View>
+          <Text className="text-brand-navy/40">›</Text>
+        </TouchableOpacity>
+
+        {/* Baby profile + growth chart */}
+        <TouchableOpacity
+          onPress={() => router.push('/(baby)/profile')}
+          className="bg-white rounded-card px-4 py-3 flex-row items-center shadow-brand"
+        >
+          <Text style={{ fontSize: 20 }} className="mr-3">
+            👶
+          </Text>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-brand-navy">
+              Hồ sơ em bé
+            </Text>
+            <Text className="text-xs text-brand-navy/60">
+              Thông tin & biểu đồ tăng trưởng
+            </Text>
+          </View>
+          <Text className="text-brand-navy/40">›</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

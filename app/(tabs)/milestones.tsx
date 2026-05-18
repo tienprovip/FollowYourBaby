@@ -122,7 +122,7 @@ export default function MilestonesTab() {
       await markAchieved({
         key: quickMark.catalogItem.key,
         category: quickMark.catalogItem.category,
-        achieved_at: markDate.toISOString().split('T')[0],
+        achieved_at: [markDate.getFullYear(), String(markDate.getMonth() + 1).padStart(2, '0'), String(markDate.getDate()).padStart(2, '0')].join('-'),
         note: markNote.trim() || null,
       });
       setQuickMark(null);

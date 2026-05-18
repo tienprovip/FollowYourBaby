@@ -98,7 +98,7 @@ export default function MilestoneDetailScreen() {
       await markAchieved({
         key: catalogItem!.key,
         category: catalogItem!.category,
-        achieved_at: achievedDate.toISOString().split('T')[0],
+        achieved_at: [achievedDate.getFullYear(), String(achievedDate.getMonth() + 1).padStart(2, '0'), String(achievedDate.getDate()).padStart(2, '0')].join('-'),
         note: noteInput.trim() || null,
       });
       setShowMarkModal(false);

@@ -17,6 +17,7 @@ import Badge from '@/components/ui/Badge';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import type { Database } from '@/types/database';
 import type { Json } from '@/types/database';
+import { toLocalDateStr } from '@/lib/dateUtils';
 
 // ---------------------------------------------------------------------------
 // Medications Screen
@@ -46,7 +47,7 @@ function MedicationCard({
   med: MedRow;
   onDelete: (id: string) => void;
 }) {
-  const isActive = !med.ended_at || med.ended_at >= new Date().toISOString().split('T')[0];
+  const isActive = !med.ended_at || med.ended_at >= toLocalDateStr(new Date());
 
   return (
     <Card padding="md" className="mb-3">
@@ -134,7 +135,7 @@ export default function MedicationsScreen() {
         name: nameInput.trim(),
         dosage: dosageInput.trim() || undefined,
         schedule,
-        started_at: new Date().toISOString().split('T')[0],
+        started_at: toLocalDateStr(new Date()),
       });
       setNameInput('');
       setDosageInput('');
@@ -164,7 +165,7 @@ export default function MedicationsScreen() {
   }
 
   const stoppedMedications = medications.filter(
-    (m) => m.ended_at && m.ended_at < new Date().toISOString().split('T')[0],
+    (m) => m.ended_at && m.ended_at < toLocalDateStr(new Date()),
   );
 
   return (

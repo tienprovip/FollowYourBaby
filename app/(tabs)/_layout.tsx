@@ -1,62 +1,34 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
-import { useActivePregnancy } from '@/hooks/usePregnancy';
-import { useBabyStore } from '@/stores/babyStore';
+import { Ionicons } from '@expo/vector-icons';
 
-// ---------------------------------------------------------------------------
-// Tab icon primitives — defined at module level so their references are stable
-// and do not trigger re-renders on every layout paint (fixes S6478).
-// ---------------------------------------------------------------------------
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
-interface TabIconProps {
-  focused: boolean;
+function makeTabIcon(name: IoniconsName, focusedName: IoniconsName) {
+  return function TabIcon({ focused }: { focused: boolean }) {
+    return (
+      <Ionicons
+        name={focused ? focusedName : name}
+        size={22}
+        color={focused ? '#FF8FA8' : '#B0B8CC'}
+      />
+    );
+  };
 }
 
-function HomeIcon({ focused }: TabIconProps) {
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>🏠</Text>
-  );
-}
-
-function PregnancyIcon({ focused }: TabIconProps) {
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>🤰</Text>
-  );
-}
-
-function BabyIcon({ focused }: TabIconProps) {
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>🍼</Text>
-  );
-}
-
-function MilestonesIcon({ focused }: TabIconProps) {
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>⭐</Text>
-  );
-}
-
-function ProfileIcon({ focused }: TabIconProps) {
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>👤</Text>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Tab layout
-// ---------------------------------------------------------------------------
+const HomeIcon = makeTabIcon('home-outline', 'home');
+const TrackingIcon = makeTabIcon('pulse-outline', 'pulse');
+const AIChatIcon = makeTabIcon('sparkles-outline', 'sparkles');
+const KnowledgeIcon = makeTabIcon('book-outline', 'book');
+const ProfileIcon = makeTabIcon('person-outline', 'person');
 
 export default function TabsLayout() {
-  const { hasActivePregnancy } = useActivePregnancy();
-  const { activeBabyId } = useBabyStore();
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
-          borderTopColor: '#F7F7F7',
+          borderTopColor: '#F0F0F0',
           borderTopWidth: 1,
           elevation: 8,
           shadowColor: '#1F2B5B',
@@ -75,44 +47,29 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Trang chủ',
-          tabBarIcon: HomeIcon,
-        }}
+        options={{ title: 'Trang chủ', tabBarIcon: HomeIcon }}
       />
       <Tabs.Screen
-        name="pregnancy"
-        options={{
-          title: 'Mẹ bầu',
-          tabBarIcon: PregnancyIcon,
-          // Hide tab when user has no active pregnancy.
-          // The screen remains routable via router.push for direct navigation.
-          href: hasActivePregnancy ? '/(tabs)/pregnancy' : null,
-        }}
+        name="tracking"
+        options={{ title: 'Theo dõi', tabBarIcon: TrackingIcon }}
       />
       <Tabs.Screen
-        name="baby"
-        options={{
-          title: 'Em bé',
-          tabBarIcon: BabyIcon,
-          href: activeBabyId ? '/(tabs)/baby' : null,
-        }}
+        name="ai-chat"
+        options={{ title: 'AI trợ lý', tabBarIcon: AIChatIcon }}
       />
       <Tabs.Screen
-        name="milestones"
-        options={{
-          title: 'Moc',
-          tabBarIcon: MilestonesIcon,
-          href: activeBabyId ? '/(tabs)/milestones' : null,
-        }}
+        name="knowledge"
+        options={{ title: 'Kiến thức', tabBarIcon: KnowledgeIcon }}
       />
       <Tabs.Screen
         name="profile"
-        options={{
-          title: 'Hồ sơ',
-          tabBarIcon: ProfileIcon,
-        }}
+        options={{ title: 'Tài khoản', tabBarIcon: ProfileIcon }}
       />
+
+      {/* Routable but hidden from the tab bar */}
+      <Tabs.Screen name="pregnancy" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="baby" options={{ tabBarButton: () => null }} />
+      <Tabs.Screen name="milestones" options={{ tabBarButton: () => null }} />
     </Tabs>
   );
 }

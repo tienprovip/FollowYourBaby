@@ -13,17 +13,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useBabies } from '@/hooks/useBabies';
 import { Button, DateField, FormField, SegmentedControl } from '@/components/ui';
 import type { SegmentOption } from '@/components/ui';
+import { toLocalDateStr, fromLocalDateStr } from '@/lib/dateUtils';
 
-// DateField works with Date objects; DB stores YYYY-MM-DD strings.
-function isoToDate(iso: string | null | undefined): Date | undefined {
-  if (!iso) return undefined;
-  const d = new Date(iso);
-  return isNaN(d.getTime()) ? undefined : d;
-}
-
-function dateToIso(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
+const isoToDate = fromLocalDateStr;
+const dateToIso = toLocalDateStr;
 
 const schema = z.object({
   name: z.string().min(1, 'Vui lòng nhập tên bé').max(100),

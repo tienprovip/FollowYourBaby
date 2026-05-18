@@ -15,6 +15,7 @@ import DateField from '@/components/ui/DateField';
 import Input from '@/components/ui/Input';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { useOnboardingStore } from '@/stores/onboardingStore';
+import { toLocalDateStr } from '@/lib/dateUtils';
 
 const BRAND_NAVY = '#1F2B5B';
 const BRAND_PINK = '#F45B7F';
@@ -32,9 +33,7 @@ const PREGNANCY_ORDER_OPTIONS = [
   { key: '4+', label: 'Từ 4 trở lên' },
 ];
 
-function toDateInput(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
+const toDateInput = toLocalDateStr;
 
 function defaultDueDateFromWeek(week: number): string {
   const d = new Date();

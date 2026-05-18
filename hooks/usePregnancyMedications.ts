@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
+import { toLocalDateStr } from '@/lib/dateUtils';
 import type { Database, Json } from '@/types/database';
 
 type MedRow = Database['public']['Tables']['pregnancy_medications']['Row'];
@@ -62,7 +63,7 @@ export function usePregnancyMedications(pregnancyId: string | null) {
           name: input.name,
           dosage: input.dosage ?? null,
           schedule: input.schedule as unknown as Json,
-          started_at: input.started_at ?? new Date().toISOString().split('T')[0],
+          started_at: input.started_at ?? toLocalDateStr(new Date()),
           ended_at: input.ended_at ?? null,
         })
         .select()
@@ -134,7 +135,7 @@ export function usePregnancyMedications(pregnancyId: string | null) {
   });
 
   // Active = no ended_at or ended_at in the future
-  const now = new Date().toISOString().split('T')[0];
+  const now = toLocalDateStr(new Date());
   const activeMedications = (listQuery.data ?? []).filter(
     (m) => !m.ended_at || m.ended_at >= now,
   );
