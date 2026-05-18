@@ -12,6 +12,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/stores/uiStore';
 import { useBabyStore } from '@/stores/babyStore';
+import { useBabyTrackingStore } from '@/stores/babyTrackingStore';
 
 export const INTRO_SEEN_KEY = 'intro_seen';
 const APP_SCHEME = 'followyourbaby';
@@ -31,6 +32,7 @@ function NavigationGuard() {
   const segments = useSegments();
   const { introSeen, introReady, setIntroSeen, setIntroReady } = useUiStore();
   const { hydrate } = useBabyStore();
+  const { hydrate: hydrateTracking } = useBabyTrackingStore();
 
   // Hydrate intro state from SecureStore once on mount.
   useEffect(() => {
@@ -39,6 +41,7 @@ function NavigationGuard() {
       setIntroReady(true);
     });
     hydrate();
+    hydrateTracking();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

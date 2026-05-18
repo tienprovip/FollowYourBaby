@@ -1,13 +1,49 @@
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
+import { useActivePregnancy } from '@/hooks/usePregnancy';
+import { useBabyStore } from '@/stores/babyStore';
 
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+// ---------------------------------------------------------------------------
+// Tab icon primitives — defined at module level so their references are stable
+// and do not trigger re-renders on every layout paint (fixes S6478).
+// ---------------------------------------------------------------------------
+
+interface TabIconProps {
+  focused: boolean;
+}
+
+function HomeIcon({ focused }: TabIconProps) {
   return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{emoji}</Text>
+    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>🏠</Text>
   );
 }
 
+function PregnancyIcon({ focused }: TabIconProps) {
+  return (
+    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>🤰</Text>
+  );
+}
+
+function BabyIcon({ focused }: TabIconProps) {
+  return (
+    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>🍼</Text>
+  );
+}
+
+function ProfileIcon({ focused }: TabIconProps) {
+  return (
+    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>👤</Text>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tab layout
+// ---------------------------------------------------------------------------
+
 export default function TabsLayout() {
+  const { hasActivePregnancy } = useActivePregnancy();
+  const { activeBabyId } = useBabyStore();
+
   return (
     <Tabs
       screenOptions={{
@@ -35,14 +71,32 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Trang chủ',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
+          tabBarIcon: HomeIcon,
+        }}
+      />
+      <Tabs.Screen
+        name="pregnancy"
+        options={{
+          title: 'Mẹ bầu',
+          tabBarIcon: PregnancyIcon,
+          // Hide tab when user has no active pregnancy.
+          // The screen remains routable via router.push for direct navigation.
+          href: hasActivePregnancy ? '/(tabs)/pregnancy' : null,
+        }}
+      />
+      <Tabs.Screen
+        name="baby"
+        options={{
+          title: 'Em bé',
+          tabBarIcon: BabyIcon,
+          href: activeBabyId ? '/(tabs)/baby' : null,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Hồ sơ',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />,
+          tabBarIcon: ProfileIcon,
         }}
       />
     </Tabs>
