@@ -1,18 +1,21 @@
 import '../global.css';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
 
 import { queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/stores/uiStore';
 import { useBabyStore } from '@/stores/babyStore';
 import { useBabyTrackingStore } from '@/stores/babyTrackingStore';
+import { useSubscriptionStore } from '@/stores/subscriptionStore';
+import { setupAndroidNotificationChannel } from '@/lib/notifications';
 
 export const INTRO_SEEN_KEY = 'intro_seen';
 const APP_SCHEME = 'followyourbaby';
@@ -33,6 +36,8 @@ function NavigationGuard() {
   const { introSeen, introReady, setIntroSeen, setIntroReady } = useUiStore();
   const { hydrate } = useBabyStore();
   const { hydrate: hydrateTracking } = useBabyTrackingStore();
+  const { hydrate: hydrateSubscription } = useSubscriptionStore();
+  const notificationResponseRef = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener> | null>(null);
 
   // Hydrate intro state from SecureStore once on mount.
   useEffect(() => {
@@ -42,6 +47,29 @@ function NavigationGuard() {
     });
     hydrate();
     hydrateTracking();
+    hydrateSubscription();
+    setupAndroidNotificationChannel().catch(() => null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Notification deep-link handler — tapping a push notification navigates to the
+  // route embedded in the notification data payload.
+  useEffect(() => {
+    notificationResponseRef.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const data = response.notification.request.content.data as Record<
+          string,
+          unknown
+        >;
+        const route = data?.route as string | undefined;
+        if (route) {
+          router.push(route as Parameters<typeof router.push>[0]);
+        }
+      });
+
+    return () => {
+      notificationResponseRef.current?.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -101,7 +129,17 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="auto" />
         <NavigationGuard />
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          {/* Paywall — presented as full-screen modal from anywhere in the app */}
+          <Stack.Screen
+            name="paywall"
+            options={{
+              presentation: 'modal',
+              headerShown: false,
+              animation: 'slide_from_bottom',
+            }}
+          />
+        </Stack>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

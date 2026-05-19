@@ -10,6 +10,7 @@ import { Stack, useRouter } from 'expo-router';
 
 import { useBabies } from '@/hooks/useBabies';
 import { useBabyStore } from '@/stores/babyStore';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Avatar, Badge, Button, EmptyState, LoadingSpinner } from '@/components/ui';
 import type { Database } from '@/types/database';
 
@@ -31,7 +32,23 @@ export default function BabiesScreen() {
   const router = useRouter();
   const { babies, isLoading, deleteBaby } = useBabies();
   const { activeBabyId, setActiveBabyId } = useBabyStore();
+  const { canAddBaby, maxBabies } = useSubscription();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  function handleAddBaby() {
+    if (!canAddBaby(babies.length)) {
+      Alert.alert(
+        'Giới hạn hồ sơ bé',
+        `Gói của bạn cho phép tối đa ${maxBabies === Infinity ? 'không giới hạn' : maxBabies} hồ sơ bé. Nâng cấp Premium để thêm nhiều hơn.`,
+        [
+          { text: 'Để sau', style: 'cancel' },
+          { text: 'Nâng cấp', onPress: () => router.push('/paywall') },
+        ],
+      );
+      return;
+    }
+    router.push('/(profile)/baby-form');
+  }
 
   function confirmDelete(baby: BabyRow) {
     Alert.alert(
@@ -84,7 +101,7 @@ export default function BabiesScreen() {
             label="Thêm bé"
             variant="primary"
             size="lg"
-            onPress={() => router.push('/(profile)/baby-form')}
+            onPress={handleAddBaby}
             className="mt-4"
           />
         }

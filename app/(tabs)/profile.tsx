@@ -93,7 +93,11 @@ export default function ProfileTab() {
             onPress={() => router.push('/(profile)/invite')}
           />
           <MenuItem label="Cài đặt" icon="settings-outline" />
-          <MenuItem label="Nhắc nhở" icon="notifications-outline" />
+          <MenuItem
+            label="Cài đặt thông báo"
+            icon="notifications-outline"
+            onPress={() => router.push('/(profile)/notification-settings')}
+          />
           <MenuItem label="Ngôn ngữ" icon="globe-outline" value="Tiếng Việt" />
           <MenuItem label="Trung tâm trợ giúp" icon="help-circle-outline" />
           <MenuItem label="Giới thiệu ứng dụng" icon="information-circle-outline" />

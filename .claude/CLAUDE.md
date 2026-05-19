@@ -331,9 +331,9 @@ Tailwind token: `shadow-brand`. Heavier variant: `shadow-brand-lg`.
 - [x] Sprint 4: Tracking em bé: bú, ngủ, tã, tăng trưởng
 - [x] Sprint 5: Hồ sơ em bé, mốc phát triển, biểu đồ tăng trưởng
 - [x] Sprint 6: Xây Supabase Edge Function AI chat và context engine
-- [ ] Sprint 7: Tích hợp AI chat vào app và bộ nhớ cá nhân hoá
-- [ ] Sprint 8: Dashboard phân tích, nhắc việc, push notification
-- [ ] Sprint 9: Kiểm thử, subscription model, premium feature cơ bản
+- [x] Sprint 7: Tích hợp AI chat vào app và bộ nhớ cá nhân hoá
+- [x] Sprint 8: Dashboard phân tích, nhắc việc, push notification
+- [x] Sprint 9: Kiểm thử, subscription model, premium feature cơ bản
 - [ ] Sprint 9: Chuẩn bị MVP, test end-to-end và feedback loop
 
 ---

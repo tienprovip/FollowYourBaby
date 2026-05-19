@@ -54,3 +54,6 @@ export type { TimeFieldProps } from './TimeField';
 
 export { default as SegmentedControl } from './SegmentedControl';
 export type { SegmentedControlProps, SegmentOption } from './SegmentedControl';
+
+export { default as NotificationBell } from './NotificationBell';
+export type { NotificationBellProps } from './NotificationBell';

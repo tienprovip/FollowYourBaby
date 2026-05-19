@@ -2,20 +2,32 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Pressable,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Avatar, Button, FormField } from '@/components/ui';
-import { USER_ROLE } from '@/lib/constants';
+
+const TIER_LABELS: Record<string, string> = {
+  free: 'Miễn phí',
+  premium: 'Premium',
+  family_premium: 'Family Premium',
+};
+
+const TIER_COLORS: Record<string, string> = {
+  free: '#6B7280',
+  premium: '#FF8FA8',
+  family_premium: '#B79CFF',
+};
 
 const schema = z.object({
   full_name: z.string().min(1, 'Vui lòng nhập họ tên').max(100),
@@ -33,6 +45,8 @@ const ROLE_LABELS: Record<string, string> = {
 export default function ProfileEditScreen() {
   const { profile, isLoading, updateProfile, isUpdating } = useProfile();
   const { signOut } = useAuth();
+  const { tier, trialDaysLeft } = useSubscription();
+  const router = useRouter();
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -111,6 +125,29 @@ export default function ProfileEditScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Subscription shortcut */}
+        <Pressable
+          onPress={() => router.push('/(profile)/subscription')}
+          accessibilityRole="button"
+          accessibilityLabel="Xem gói đăng ký"
+          className="bg-white rounded-card p-4 shadow-brand border border-brand-gray mb-4 flex-row items-center justify-between active:opacity-80"
+        >
+          <View className="flex-row items-center gap-x-3">
+            <Text className="text-xl">💎</Text>
+            <View>
+              <Text className="text-sm text-brand-navy/50">Gói đăng ký</Text>
+              <Text
+                className="text-base font-bold"
+                style={{ color: TIER_COLORS[tier] ?? '#6B7280' }}
+              >
+                {TIER_LABELS[tier] ?? tier}
+                {trialDaysLeft !== null ? ` (thử nghiệm ${trialDaysLeft} ngày)` : ''}
+              </Text>
+            </View>
+          </View>
+          <Text className="text-brand-navy/30 text-xl">›</Text>
+        </Pressable>
 
         <Button
           label={saveSuccess ? 'Đã lưu!' : 'Lưu thay đổi'}

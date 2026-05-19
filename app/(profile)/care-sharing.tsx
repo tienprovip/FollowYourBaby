@@ -8,6 +8,7 @@ import {
 import { Stack, useRouter } from 'expo-router';
 
 import { useCareShares } from '@/hooks/useCareShares';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Avatar, Badge, Button, EmptyState, LoadingSpinner } from '@/components/ui';
 import type { Database } from '@/types/database';
 
@@ -26,6 +27,7 @@ const RESOURCE_LABELS: Record<string, string> = {
 
 export default function CareSharingScreen() {
   const router = useRouter();
+  const { canShareCare } = useSubscription();
   const {
     sharesGranted,
     isLoadingGranted,
@@ -34,6 +36,21 @@ export default function CareSharingScreen() {
     revokeShare,
     isRevoking,
   } = useCareShares();
+
+  function handleInvite() {
+    if (!canShareCare) {
+      Alert.alert(
+        'Tính năng Premium',
+        'Chia sẻ chăm sóc chỉ có trên gói Premium trở lên. Nâng cấp để mời người thân cùng theo dõi bé.',
+        [
+          { text: 'Để sau', style: 'cancel' },
+          { text: 'Nâng cấp', onPress: () => router.push('/paywall') },
+        ],
+      );
+      return;
+    }
+    router.push('/(profile)/invite');
+  }
 
   const isLoading = isLoadingGranted || isLoadingReceived;
 
@@ -85,7 +102,7 @@ export default function CareSharingScreen() {
                 label="Mời người"
                 variant="primary"
                 size="sm"
-                onPress={() => router.push('/(profile)/invite')}
+                onPress={handleInvite}
               />
             </View>
 
