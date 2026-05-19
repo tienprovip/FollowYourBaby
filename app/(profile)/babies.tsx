@@ -29,7 +29,7 @@ function genderLabel(sex: string | null): string {
 
 export default function BabiesScreen() {
   const router = useRouter();
-  const { babies, isLoading, deleteBaby, isDeleting } = useBabies();
+  const { babies, isLoading, deleteBaby } = useBabies();
   const { activeBabyId, setActiveBabyId } = useBabyStore();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -72,7 +72,7 @@ export default function BabiesScreen() {
         data={babies}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 80 }}
-        style={{ backgroundColor: '#FFF3EC' }}
+        style={{ backgroundColor: '#fff5f7' }}
         ListEmptyComponent={
           <EmptyState
             title="Chưa có hồ sơ bé nào"

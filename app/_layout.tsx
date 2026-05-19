@@ -76,6 +76,7 @@ function NavigationGuard() {
     const inOnboardingGroup = segment === '(onboarding)';
     const inIntroGroup = segment === '(intro)';
     const inInviteGroup = segment === 'invite';
+    const inTabsGroup = segment === '(tabs)';
 
     // Allow the invite accept screen to render without re-routing
     if (inInviteGroup) return;
@@ -86,7 +87,7 @@ function NavigationGuard() {
       router.replace('/(auth)/login');
     } else if (introSeen && user && !user.onboardingCompleted && !inOnboardingGroup) {
       router.replace('/(onboarding)/journey');
-    } else if (introSeen && user && user.onboardingCompleted && (inAuthGroup || inOnboardingGroup)) {
+    } else if (introSeen && user && user.onboardingCompleted && !inTabsGroup) {
       router.replace('/(tabs)');
     }
   }, [user, isLoading, segments, router, introSeen, introReady]);

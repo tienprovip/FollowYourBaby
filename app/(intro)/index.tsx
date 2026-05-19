@@ -329,7 +329,7 @@ export default function IntroScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#FFF8F6',
+    backgroundColor: '#fff5f7',
   },
   carousel: {
     flex: 1,

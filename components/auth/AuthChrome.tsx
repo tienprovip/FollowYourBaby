@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Ellipse, G, Path, Rect } from 'react-native-svg';
 import { cn } from '@/lib/cn';
 
@@ -61,9 +62,10 @@ export function BackButton({ label = 'Quay lại', onPress }: BackButtonProps) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="mb-5 h-10 w-10 items-center justify-center"
+      hitSlop={12}
+      className="mb-5 h-9 w-9 items-center justify-center"
     >
-      <Text className="text-4xl font-medium leading-10 text-brand-navy">{'<'}</Text>
+      <Ionicons name="chevron-back" size={28} color="#1F2B5B" />
     </Pressable>
   );
 }

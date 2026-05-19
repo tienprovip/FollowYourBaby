@@ -50,7 +50,7 @@ export default function PregnanciesScreen() {
         data={pregnancies}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 80 }}
-        style={{ backgroundColor: '#FFF3EC' }}
+        style={{ backgroundColor: '#fff5f7' }}
         ListEmptyComponent={
           <EmptyState
             title="Chưa có thai kỳ nào"

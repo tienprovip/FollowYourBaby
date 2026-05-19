@@ -22,7 +22,7 @@ export interface ButtonProps extends Omit<PressableProps, 'style'> {
 
 const bgColors = StyleSheet.create({
   primary:     { backgroundColor: '#FF6B8A' },
-  secondary:   { backgroundColor: '#FFF3EC' },
+  secondary:   { backgroundColor: '#fff5f7' },
   ghost:       { backgroundColor: 'transparent' },
   destructive: { backgroundColor: '#ef4444' },
   ai:          { backgroundColor: '#9B7AEF' },
@@ -31,7 +31,7 @@ const bgColors = StyleSheet.create({
 const bgPressedColors = StyleSheet.create({
   primary:     { backgroundColor: '#E84E70' },
   secondary:   { backgroundColor: '#FFD9E3' },
-  ghost:       { backgroundColor: '#FFF3EC' },
+  ghost:       { backgroundColor: '#fff5f7' },
   destructive: { backgroundColor: '#dc2626' },
   ai:          { backgroundColor: '#7C5CDB' },
 });

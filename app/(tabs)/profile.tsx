@@ -1,90 +1,111 @@
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useProfile } from '@/hooks/useProfile';
+import { Avatar, Button } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
-import { Avatar } from '@/components/ui';
+import { useProfile } from '@/hooks/useProfile';
 
-const ROLE_LABELS: Record<string, string> = {
-  pregnant_mother: 'Mẹ bầu',
-  parent: 'Phụ huynh',
-  caregiver: 'Người chăm sóc',
-};
+type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface MenuItemProps {
   label: string;
-  onPress: () => void;
-  icon?: string;
+  icon: IoniconsName;
+  onPress?: () => void;
+  value?: string;
 }
 
-function MenuItem({ label, icon, onPress }: MenuItemProps) {
+function MenuItem({ label, icon, onPress, value }: MenuItemProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={!onPress}
       accessibilityRole="button"
-      className="flex-row items-center px-4 py-4 border-b border-brand-gray/50 active:opacity-60"
+      accessibilityState={{ disabled: !onPress }}
+      className="flex-row items-center rounded-input bg-white px-4 py-4 shadow-brand active:opacity-70"
     >
-      {icon && <Text className="text-base mr-3">{icon}</Text>}
-      <Text className="flex-1 text-base text-brand-navy font-medium">{label}</Text>
-      <Text className="text-brand-navy/30 text-lg">›</Text>
+      <View className="mr-3 h-8 w-8 items-center justify-center rounded-full bg-brand-gray">
+        <Ionicons name={icon} size={18} color="#1F2B5B" />
+      </View>
+      <Text className="flex-1 text-[15px] font-semibold text-brand-navy">{label}</Text>
+      {value && <Text className="mr-2 text-sm font-medium text-brand-navy/35">{value}</Text>}
+      <Ionicons name="chevron-forward" size={18} color="#B0B8CC" />
     </TouchableOpacity>
   );
 }
 
 export default function ProfileTab() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { profile } = useProfile();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
+
+  const displayName = profile?.full_name ?? user?.displayName ?? 'Mẹ của Bé Gấu';
+  const email = user?.email ?? 'ngoc.mom@gmail.com';
 
   return (
-    <ScrollView className="flex-1 bg-brand-peach" contentContainerStyle={{ paddingBottom: 32 }}>
-      {/* Header */}
-      <View className="items-center pt-10 pb-6 px-6">
-        <Avatar
-          uri={profile?.avatar_url ?? undefined}
-          name={profile?.full_name ?? 'Người dùng'}
-          size="lg"
-        />
-        <Text className="mt-3 text-xl font-bold text-brand-navy">
-          {profile?.full_name ?? 'Chưa cập nhật tên'}
-        </Text>
-        {profile?.role && (
-          <View className="mt-1 bg-brand-pink/15 rounded-full px-3 py-1">
-            <Text className="text-xs text-brand-pink font-semibold">
-              {ROLE_LABELS[profile.role] ?? profile.role}
-            </Text>
+    <ScrollView
+      className="flex-1 bg-brand-peach"
+      contentContainerStyle={{ paddingTop: insets.top + 18, paddingBottom: 96 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="px-5">
+        <Text className="mb-7 text-xl font-bold text-brand-navy">Tài khoản</Text>
+
+        <View className="mb-7 flex-row items-center">
+          <Avatar
+            uri={profile?.avatar_url ?? user?.avatarUrl ?? undefined}
+            name={displayName}
+            size="lg"
+            className="bg-brand-pink-100"
+          />
+          <View className="ml-4 flex-1">
+            <Text className="text-base font-bold text-brand-navy">{displayName}</Text>
+            <Text className="mt-1 text-sm font-medium text-brand-navy/55">{email}</Text>
           </View>
-        )}
-      </View>
+        </View>
 
-      {/* Account section */}
-      <View className="mx-4 bg-white rounded-card shadow-brand mb-4 overflow-hidden">
-        <Text className="text-xs text-brand-navy/40 font-semibold uppercase px-4 pt-3 pb-1 tracking-wider">
-          Tài khoản
-        </Text>
-        <MenuItem label="Thông tin cá nhân" icon="👤" onPress={() => router.push('/(profile)/')} />
-        <MenuItem label="Danh sách bé" icon="👶" onPress={() => router.push('/(profile)/babies')} />
-        <MenuItem label="Thai kỳ" icon="🤰" onPress={() => router.push('/(profile)/pregnancies')} />
-      </View>
+        <View className="gap-3">
+          <MenuItem
+            label="Hồ sơ của bé"
+            icon="id-card-outline"
+            onPress={() => router.push('/(profile)/babies')}
+          />
+          <MenuItem
+            label="Hồ sơ của mẹ"
+            icon="person-outline"
+            onPress={() => router.push('/(profile)/')}
+          />
+          <MenuItem
+            label="Thai kỳ"
+            icon="heart-outline"
+            onPress={() => router.push('/(profile)/pregnancies')}
+          />
+          <MenuItem
+            label="Chia sẻ chăm sóc"
+            icon="people-outline"
+            onPress={() => router.push('/(profile)/care-sharing')}
+          />
+          <MenuItem
+            label="Mời người chăm sóc"
+            icon="mail-outline"
+            onPress={() => router.push('/(profile)/invite')}
+          />
+          <MenuItem label="Cài đặt" icon="settings-outline" />
+          <MenuItem label="Nhắc nhở" icon="notifications-outline" />
+          <MenuItem label="Ngôn ngữ" icon="globe-outline" value="Tiếng Việt" />
+          <MenuItem label="Trung tâm trợ giúp" icon="help-circle-outline" />
+          <MenuItem label="Giới thiệu ứng dụng" icon="information-circle-outline" />
+        </View>
 
-      {/* Sharing section */}
-      <View className="mx-4 bg-white rounded-card shadow-brand mb-4 overflow-hidden">
-        <Text className="text-xs text-brand-navy/40 font-semibold uppercase px-4 pt-3 pb-1 tracking-wider">
-          Chia sẻ
-        </Text>
-        <MenuItem label="Chia sẻ chăm sóc" icon="🤝" onPress={() => router.push('/(profile)/care-sharing')} />
-        <MenuItem label="Mời người chăm sóc" icon="✉️" onPress={() => router.push('/(profile)/invite')} />
-      </View>
-
-      {/* Sign out */}
-      <View className="mx-4">
-        <TouchableOpacity
+        <Button
+          label="Đăng xuất"
+          variant="primary"
+          size="lg"
+          className="mt-5 w-full shadow-brand"
           onPress={signOut}
-          accessibilityRole="button"
-          className="bg-red-50 rounded-card px-4 py-4 items-center"
-        >
-          <Text className="text-base font-semibold text-red-500">Đăng xuất</Text>
-        </TouchableOpacity>
+        />
       </View>
     </ScrollView>
   );

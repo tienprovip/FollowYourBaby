@@ -5,7 +5,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 // and redirects to either /(auth)/login or /(tabs)/.
 export default function RootIndex() {
   return (
-    <View className="flex-1 items-center justify-center bg-[#fffdf7]">
+    <View className="flex-1 items-center justify-center bg-brand-peach">
       <LoadingSpinner size="large" />
     </View>
   );

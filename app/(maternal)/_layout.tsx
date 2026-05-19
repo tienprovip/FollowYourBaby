@@ -5,11 +5,11 @@ export default function MaternalLayout() {
     <Stack
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: '#FFF3EC' },
+        headerStyle: { backgroundColor: '#fff5f7' },
         headerTintColor: '#1F2B5B',
         headerTitleStyle: { fontWeight: '700' },
         headerBackTitle: 'Quay lại',
-        contentStyle: { backgroundColor: '#FFF3EC' },
+        contentStyle: { backgroundColor: '#fff5f7' },
       }}
     />
   );

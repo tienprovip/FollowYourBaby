@@ -12,7 +12,7 @@ module.exports = {
         brand: {
           pink:     '#FF8FA8', // Primary — soft pink
           lavender: '#B79CFF', // AI / Highlight
-          peach:    '#FFF3EC', // Background
+          peach:    '#fff5f7', // Background
           blue:     '#A9D6FF', // Baby tracking
           mint:     '#AEE6C8', // Success
           gray:     '#F7F7F7', // Cards
@@ -71,7 +71,7 @@ module.exports = {
           900: '#14532d',
         },
         cream: {
-          50:  '#fffdf7',
+          50:  '#fff5f7',
           100: '#fef9ec',
           200: '#fdf0c8',
           300: '#fbe5a0',

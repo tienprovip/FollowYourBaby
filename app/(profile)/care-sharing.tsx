@@ -1,7 +1,6 @@
 import {
   Alert,
   FlatList,
-  RefreshControl,
   Text,
   TouchableOpacity,
   View,
@@ -74,7 +73,7 @@ export default function CareSharingScreen() {
       <FlatList
         data={[]}
         keyExtractor={() => 'placeholder'}
-        style={{ backgroundColor: '#FFF3EC' }}
+        style={{ backgroundColor: '#fff5f7' }}
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         renderItem={null}
         ListHeaderComponent={

@@ -144,7 +144,7 @@ export default function CompleteScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#FFF8F6',
+    backgroundColor: '#fff5f7',
   },
   scroll: {
     flex: 1,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   footer: {
-    backgroundColor: '#FFF8F6',
+    backgroundColor: '#fff5f7',
     bottom: 0,
     left: 0,
     paddingBottom: 34,

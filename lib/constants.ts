@@ -30,7 +30,7 @@ export const COLORS = {
   mint600: '#16a34a',
 
   // Cream — neutral backgrounds, cards
-  cream50: '#fffdf7',
+  cream50: '#fff5f7',
   cream100: '#fef9ec',
   cream200: '#fdf0c8',
 
