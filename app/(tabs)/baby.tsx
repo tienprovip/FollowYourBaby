@@ -3,6 +3,7 @@ import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useBaby } from '@/hooks/useBaby';
@@ -54,7 +55,7 @@ function relativeTime(isoStr: string): string {
 
 function ScreenHeader({ title }: HeaderProps) {
   return (
-    <View className="px-6 pt-12 pb-4">
+    <View className="px-6 pb-4 pt-3">
       <View className="flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -325,223 +326,231 @@ export default function BabyTab() {
   ].filter(Boolean).length;
 
   return (
-    <ScrollView
-      className="flex-1 bg-[#FFF8FA]"
-      refreshControl={<RefreshControl refreshing={dataLoading} onRefresh={onRefresh} />}
-      contentContainerStyle={{ paddingBottom: 34 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <ScreenHeader title="Theo dõi bé" />
-      <SegmentTabs />
+    <SafeAreaView className="flex-1 bg-[#FFF8FA]" edges={['top']}>
+      <ScrollView
+        className="flex-1"
+        refreshControl={<RefreshControl refreshing={dataLoading} onRefresh={onRefresh} />}
+        contentContainerStyle={{ paddingBottom: 34 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <ScreenHeader title="Theo dõi bé" />
+        <SegmentTabs />
 
-      <View className="px-5">
-        {(activeFeedSession || activeSleepSession) && (
-          <TouchableOpacity
-            onPress={() => router.push(activeFeedSession ? '/(baby)/feed' : '/(baby)/sleep')}
-            className="mb-4 flex-row items-center rounded-card bg-brand-lavender-50 px-4 py-3"
-          >
-            <Text className="mr-3 text-xl">{activeFeedSession ? '🍼' : '😴'}</Text>
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-brand-navy">
-                {activeFeedSession ? 'Đang bú mẹ' : 'Bé đang ngủ'}
-              </Text>
-              <Text className="text-xs font-medium text-brand-navy/60">
-                Nhấn để mở phiên đang chạy
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={NAVY} />
-          </TouchableOpacity>
-        )}
-
-        <Card className="mb-4 border-brand-lavender-100" padding="lg">
-          <View className="flex-row items-center">
-            <BabyAvatar large />
-            <View className="ml-5 flex-1">
-              <View className="flex-row items-center">
-                <Text className="text-2xl font-bold text-brand-navy">{baby?.name ?? 'Bé yêu'}</Text>
-                <TouchableOpacity
-                  onPress={() => router.push('/(baby)/profile')}
-                  className="ml-3 h-8 w-8 items-center justify-center rounded-full bg-white shadow-brand"
-                >
-                  <Ionicons name="pencil" size={14} color={NAVY} />
-                </TouchableOpacity>
-              </View>
-              <Text className="mt-3 text-sm font-bold text-brand-lavender-700">
-                {baby?.ageLabel ?? 'Đang cập nhật'}
-              </Text>
-              <Text className="mt-3 text-xs font-bold text-brand-navy">
-                Ngày sinh: {baby?.dob ? format(parseISO(baby.dob), 'dd/MM/yyyy') : '--/--/----'}
-              </Text>
-            </View>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-6">
-            <BabyMetric
-              icon="weight-kilogram"
-              label="Cân nặng"
-              value={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
-              accent={PURPLE}
-            />
-            <BabyMetric
-              icon="human-male-height"
-              label="Chiều cao"
-              value={lengthCm != null ? `${lengthCm} cm` : '-- cm'}
-              accent="#7B61FF"
-            />
-            <BabyMetric
-              icon="baby-bottle-outline"
-              label="Bú sữa"
-              value={`${feedToday.length} cữ/ngày`}
-              accent="#20B7D9"
-            />
-            <BabyMetric
-              icon="weather-night"
-              label="Ngủ"
-              value={`${totalSleepH} giờ/đêm`}
-              accent="#4FA8FF"
-            />
+        <View className="px-5">
+          {(activeFeedSession || activeSleepSession) && (
             <TouchableOpacity
-              onPress={() => router.push('/(baby)/growth')}
-              className="h-8 w-8 items-center justify-center rounded-full border border-brand-gray"
+              onPress={() => router.push(activeFeedSession ? '/(baby)/feed' : '/(baby)/sleep')}
+              className="mb-4 flex-row items-center rounded-card bg-brand-lavender-50 px-4 py-3"
             >
-              <Ionicons name="chevron-forward" size={16} color={NAVY} />
-            </TouchableOpacity>
-          </ScrollView>
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <View className="flex-row items-center">
-            <View className="flex-1 pr-3">
-              <View className="mb-4 flex-row items-center justify-between">
-                <Text className="text-base font-bold text-brand-navy">Sự phát triển của bé</Text>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/milestones')}>
-                  <Text className="text-xs font-bold text-brand-navy">Xem chi tiết ›</Text>
-                </TouchableOpacity>
+              <Text className="mr-3 text-xl">{activeFeedSession ? '🍼' : '😴'}</Text>
+              <View className="flex-1">
+                <Text className="text-sm font-bold text-brand-navy">
+                  {activeFeedSession ? 'Đang bú mẹ' : 'Bé đang ngủ'}
+                </Text>
+                <Text className="text-xs font-medium text-brand-navy/60">
+                  Nhấn để mở phiên đang chạy
+                </Text>
               </View>
-              <Text className="text-sm font-bold leading-5 text-brand-navy">
-                Bé đang phát triển rất tốt!
-              </Text>
-              <Text className="mt-2 text-sm font-semibold leading-5 text-brand-navy/70">
-                Hãy tiếp tục duy trì chế độ chăm sóc và dinh dưỡng phù hợp nhé.
-              </Text>
-            </View>
-            <BabyAvatar />
-          </View>
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <Text className="mb-4 text-base font-bold text-brand-navy">Biểu đồ tăng trưởng</Text>
-          <GrowthChart
-            values={growthValues}
-            latestLabel={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
-          />
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-base font-bold text-brand-navy">Việc cần làm</Text>
-            <Text className="text-xs font-bold text-brand-navy/60">
-              {completedTasks}/4 đã hoàn thành
-            </Text>
-          </View>
-          <TodoItem
-            title="Cho bé ăn dặm"
-            body={
-              lastFeed
-                ? `${FEED_TYPE_LABELS[lastFeed.type] ?? lastFeed.type} - ${relativeTime(lastFeed.started_at)}`
-                : 'Bữa trưa - 11:30'
-            }
-            done={feedToday.length > 0}
-          />
-          <TodoItem title="Tắm cho bé" body="Buổi tối - 20:00" done={diaperCount > 0} />
-          <TodoItem title="Đọc sách cùng bé" body="Thời gian gắn kết yêu thương" />
-          <TodoItem
-            title="Theo dõi cân nặng"
-            body={weightKg != null ? 'Đã có cân nặng mới nhất' : 'Cập nhật cân nặng tuần này'}
-            done={weightKg != null}
-          />
-          <View className="items-end">
-            <Svg width={96} height={78} viewBox="0 0 96 78">
-              <Rect x="26" y="12" width="44" height="56" rx="10" fill="#F1E9FF" />
-              <Rect x="34" y="6" width="28" height="12" rx="5" fill="#A578FF" />
-              <Line x1="38" y1="30" x2="58" y2="30" stroke="#B79CFF" strokeWidth="4" />
-              <Line x1="38" y1="44" x2="58" y2="44" stroke="#B79CFF" strokeWidth="4" />
-              <Circle cx="76" cy="39" r="13" fill="#B79CFF" opacity="0.75" />
-            </Svg>
-          </View>
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-base font-bold text-brand-navy">Gợi ý hôm nay</Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/knowledge')}>
-              <Text className="text-xs font-bold text-brand-navy">Xem tất cả ›</Text>
+              <Ionicons name="chevron-forward" size={18} color={NAVY} />
             </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <AdviceCard title="Thực đơn ăn dặm cho bé 8-9 tháng" tag="Dinh dưỡng" emoji="🍲" />
-            <AdviceCard title="5 trò chơi giúp bé phát triển trí não" tag="Phát triển" emoji="🧸" />
-            <AdviceCard title="Bí quyết giúp bé ngủ ngon hơn" tag="Giấc ngủ" emoji="😴" />
-          </ScrollView>
-        </Card>
-
-        <Card className="mb-4 border-brand-lavender-100 bg-brand-lavender-50" padding="lg">
-          <View className="flex-row items-center">
-            <View className="flex-1">
-              <Text className="text-base font-bold text-brand-lavender-700">
-                Hỏi FollowYourBaby AI
-              </Text>
-              <Text className="mt-2 text-sm font-bold leading-5 text-brand-navy">
-                Giải đáp thắc mắc 24/7 về sự phát triển của bé
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => router.push('/(tabs)/ai-chat')}
-              className="mr-3 rounded-input bg-brand-lavender-500 px-5 py-3"
-            >
-              <Text className="text-xs font-bold text-white">Hỏi ngay</Text>
-            </TouchableOpacity>
-            <View className="h-20 w-20 items-center justify-center rounded-full bg-white">
-              <MaterialCommunityIcons name="robot-happy-outline" size={42} color={PURPLE} />
-            </View>
-          </View>
-        </Card>
-
-        <Card padding="lg">
-          <Text className="mb-4 text-base font-bold text-brand-navy">Công cụ theo dõi nhanh</Text>
-          <View className="flex-row gap-x-3">
-            <QuickTool
-              icon="needle"
-              label="Lịch tiêm chủng"
-              color="#8C5CFF"
-              onPress={() => router.push('/(tabs)/reminders')}
-            />
-            <QuickTool
-              icon="book-open-page-variant"
-              label="Nhật ký bé"
-              color="#8C5CFF"
-              onPress={() => router.push('/(baby)/activities')}
-            />
-            <QuickTool
-              icon="file-document-outline"
-              label="Kết quả khám"
-              color="#4F8DFF"
-              onPress={() => router.push('/(baby)/health')}
-            />
-            <QuickTool
-              icon="shield-check-outline"
-              label="Sổ tiêm chủng"
-              color="#20B7A8"
-              onPress={() => router.push('/(tabs)/reminders')}
-            />
-          </View>
-          {lastSleep && (
-            <Text className="mt-4 text-xs font-semibold text-brand-navy/60">
-              Giấc ngủ gần nhất: {lastSleep.kind === 'nap' ? 'ngủ ngày' : 'ngủ đêm'} -{' '}
-              {relativeTime(lastSleep.started_at)}
-            </Text>
           )}
-        </Card>
-      </View>
-    </ScrollView>
+
+          <Card className="mb-4 border-brand-lavender-100" padding="lg">
+            <View className="flex-row items-center">
+              <BabyAvatar large />
+              <View className="ml-5 flex-1">
+                <View className="flex-row items-center">
+                  <Text className="text-2xl font-bold text-brand-navy">
+                    {baby?.name ?? 'Bé yêu'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(baby)/profile')}
+                    className="ml-3 h-8 w-8 items-center justify-center rounded-full bg-white shadow-brand"
+                  >
+                    <Ionicons name="pencil" size={14} color={NAVY} />
+                  </TouchableOpacity>
+                </View>
+                <Text className="mt-3 text-sm font-bold text-brand-lavender-700">
+                  {baby?.ageLabel ?? 'Đang cập nhật'}
+                </Text>
+                <Text className="mt-3 text-xs font-bold text-brand-navy">
+                  Ngày sinh: {baby?.dob ? format(parseISO(baby.dob), 'dd/MM/yyyy') : '--/--/----'}
+                </Text>
+              </View>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-6">
+              <BabyMetric
+                icon="weight-kilogram"
+                label="Cân nặng"
+                value={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
+                accent={PURPLE}
+              />
+              <BabyMetric
+                icon="human-male-height"
+                label="Chiều cao"
+                value={lengthCm != null ? `${lengthCm} cm` : '-- cm'}
+                accent="#7B61FF"
+              />
+              <BabyMetric
+                icon="baby-bottle-outline"
+                label="Bú sữa"
+                value={`${feedToday.length} cữ/ngày`}
+                accent="#20B7D9"
+              />
+              <BabyMetric
+                icon="weather-night"
+                label="Ngủ"
+                value={`${totalSleepH} giờ/đêm`}
+                accent="#4FA8FF"
+              />
+              <TouchableOpacity
+                onPress={() => router.push('/(baby)/growth')}
+                className="h-8 w-8 items-center justify-center rounded-full border border-brand-gray"
+              >
+                <Ionicons name="chevron-forward" size={16} color={NAVY} />
+              </TouchableOpacity>
+            </ScrollView>
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <View className="flex-row items-center">
+              <View className="flex-1 pr-3">
+                <View className="mb-4 flex-row items-center justify-between">
+                  <Text className="text-base font-bold text-brand-navy">Sự phát triển của bé</Text>
+                  <TouchableOpacity onPress={() => router.push('/(tabs)/milestones')}>
+                    <Text className="text-xs font-bold text-brand-navy">Xem chi tiết ›</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text className="text-sm font-bold leading-5 text-brand-navy">
+                  Bé đang phát triển rất tốt!
+                </Text>
+                <Text className="mt-2 text-sm font-semibold leading-5 text-brand-navy/70">
+                  Hãy tiếp tục duy trì chế độ chăm sóc và dinh dưỡng phù hợp nhé.
+                </Text>
+              </View>
+              <BabyAvatar />
+            </View>
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <Text className="mb-4 text-base font-bold text-brand-navy">Biểu đồ tăng trưởng</Text>
+            <GrowthChart
+              values={growthValues}
+              latestLabel={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
+            />
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-base font-bold text-brand-navy">Việc cần làm</Text>
+              <Text className="text-xs font-bold text-brand-navy/60">
+                {completedTasks}/4 đã hoàn thành
+              </Text>
+            </View>
+            <TodoItem
+              title="Cho bé ăn dặm"
+              body={
+                lastFeed
+                  ? `${FEED_TYPE_LABELS[lastFeed.type] ?? lastFeed.type} - ${relativeTime(lastFeed.started_at)}`
+                  : 'Bữa trưa - 11:30'
+              }
+              done={feedToday.length > 0}
+            />
+            <TodoItem title="Tắm cho bé" body="Buổi tối - 20:00" done={diaperCount > 0} />
+            <TodoItem title="Đọc sách cùng bé" body="Thời gian gắn kết yêu thương" />
+            <TodoItem
+              title="Theo dõi cân nặng"
+              body={weightKg != null ? 'Đã có cân nặng mới nhất' : 'Cập nhật cân nặng tuần này'}
+              done={weightKg != null}
+            />
+            <View className="items-end">
+              <Svg width={96} height={78} viewBox="0 0 96 78">
+                <Rect x="26" y="12" width="44" height="56" rx="10" fill="#F1E9FF" />
+                <Rect x="34" y="6" width="28" height="12" rx="5" fill="#A578FF" />
+                <Line x1="38" y1="30" x2="58" y2="30" stroke="#B79CFF" strokeWidth="4" />
+                <Line x1="38" y1="44" x2="58" y2="44" stroke="#B79CFF" strokeWidth="4" />
+                <Circle cx="76" cy="39" r="13" fill="#B79CFF" opacity="0.75" />
+              </Svg>
+            </View>
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-base font-bold text-brand-navy">Gợi ý hôm nay</Text>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/knowledge')}>
+                <Text className="text-xs font-bold text-brand-navy">Xem tất cả ›</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <AdviceCard title="Thực đơn ăn dặm cho bé 8-9 tháng" tag="Dinh dưỡng" emoji="🍲" />
+              <AdviceCard
+                title="5 trò chơi giúp bé phát triển trí não"
+                tag="Phát triển"
+                emoji="🧸"
+              />
+              <AdviceCard title="Bí quyết giúp bé ngủ ngon hơn" tag="Giấc ngủ" emoji="😴" />
+            </ScrollView>
+          </Card>
+
+          <Card className="mb-4 border-brand-lavender-100 bg-brand-lavender-50" padding="lg">
+            <View className="flex-row items-center">
+              <View className="flex-1">
+                <Text className="text-base font-bold text-brand-lavender-700">
+                  Hỏi FollowYourBaby AI
+                </Text>
+                <Text className="mt-2 text-sm font-bold leading-5 text-brand-navy">
+                  Giải đáp thắc mắc 24/7 về sự phát triển của bé
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => router.push('/(tabs)/ai-chat')}
+                className="mr-3 rounded-input bg-brand-lavender-500 px-5 py-3"
+              >
+                <Text className="text-xs font-bold text-white">Hỏi ngay</Text>
+              </TouchableOpacity>
+              <View className="h-20 w-20 items-center justify-center rounded-full bg-white">
+                <MaterialCommunityIcons name="robot-happy-outline" size={42} color={PURPLE} />
+              </View>
+            </View>
+          </Card>
+
+          <Card padding="lg">
+            <Text className="mb-4 text-base font-bold text-brand-navy">Công cụ theo dõi nhanh</Text>
+            <View className="flex-row gap-x-3">
+              <QuickTool
+                icon="needle"
+                label="Lịch tiêm chủng"
+                color="#8C5CFF"
+                onPress={() => router.push('/(tabs)/reminders')}
+              />
+              <QuickTool
+                icon="book-open-page-variant"
+                label="Nhật ký bé"
+                color="#8C5CFF"
+                onPress={() => router.push('/(baby)/activities')}
+              />
+              <QuickTool
+                icon="file-document-outline"
+                label="Kết quả khám"
+                color="#4F8DFF"
+                onPress={() => router.push('/(baby)/health')}
+              />
+              <QuickTool
+                icon="shield-check-outline"
+                label="Sổ tiêm chủng"
+                color="#20B7A8"
+                onPress={() => router.push('/(tabs)/reminders')}
+              />
+            </View>
+            {lastSleep && (
+              <Text className="mt-4 text-xs font-semibold text-brand-navy/60">
+                Giấc ngủ gần nhất: {lastSleep.kind === 'nap' ? 'ngủ ngày' : 'ngủ đêm'} -{' '}
+                {relativeTime(lastSleep.started_at)}
+              </Text>
+            )}
+          </Card>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

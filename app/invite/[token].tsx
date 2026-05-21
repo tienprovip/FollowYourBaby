@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCareShares } from '@/hooks/useCareShares';
 import { useAuth } from '@/hooks/useAuth';
@@ -40,7 +41,10 @@ export default function AcceptInviteScreen() {
     return (
       <>
         <Stack.Screen options={{ title: 'Lời mời chăm sóc', headerShown: false }} />
-        <View className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4">
+        <SafeAreaView
+          className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4"
+          edges={['top']}
+        >
           <Text className="text-2xl font-bold text-brand-navy text-center">
             Vui lòng đăng nhập trước
           </Text>
@@ -53,7 +57,7 @@ export default function AcceptInviteScreen() {
             size="lg"
             onPress={() => router.replace('/(auth)/login')}
           />
-        </View>
+        </SafeAreaView>
       </>
     );
   }
@@ -62,10 +66,13 @@ export default function AcceptInviteScreen() {
     return (
       <>
         <Stack.Screen options={{ title: 'Đang xử lý...', headerShown: false }} />
-        <View className="flex-1 items-center justify-center bg-brand-peach gap-y-4">
+        <SafeAreaView
+          className="flex-1 items-center justify-center bg-brand-peach gap-y-4"
+          edges={['top']}
+        >
           <ActivityIndicator color="#FF8FA8" size="large" />
           <Text className="text-sm text-brand-navy/60">Đang xác nhận lời mời...</Text>
-        </View>
+        </SafeAreaView>
       </>
     );
   }
@@ -74,7 +81,10 @@ export default function AcceptInviteScreen() {
     return (
       <>
         <Stack.Screen options={{ title: 'Lời mời đã chấp nhận', headerShown: false }} />
-        <View className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4">
+        <SafeAreaView
+          className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4"
+          edges={['top']}
+        >
           <View className="w-16 h-16 rounded-full bg-brand-mint/30 items-center justify-center mb-2">
             <Text className="text-3xl">✓</Text>
           </View>
@@ -90,7 +100,7 @@ export default function AcceptInviteScreen() {
             size="lg"
             onPress={() => router.replace('/(tabs)')}
           />
-        </View>
+        </SafeAreaView>
       </>
     );
   }
@@ -99,7 +109,10 @@ export default function AcceptInviteScreen() {
     return (
       <>
         <Stack.Screen options={{ title: 'Lỗi', headerShown: false }} />
-        <View className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4">
+        <SafeAreaView
+          className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4"
+          edges={['top']}
+        >
           <Text className="text-2xl font-bold text-brand-navy text-center">
             Không thể chấp nhận lời mời
           </Text>
@@ -110,7 +123,7 @@ export default function AcceptInviteScreen() {
             size="lg"
             onPress={() => router.replace('/(tabs)')}
           />
-        </View>
+        </SafeAreaView>
       </>
     );
   }
@@ -118,20 +131,18 @@ export default function AcceptInviteScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Lời mời chăm sóc', headerShown: false }} />
-      <View className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4">
+      <SafeAreaView
+        className="flex-1 items-center justify-center bg-brand-peach px-6 gap-y-4"
+        edges={['top']}
+      >
         <Text className="text-2xl font-bold text-brand-navy text-center">
           Bạn được mời chia sẻ chăm sóc
         </Text>
         <Text className="text-sm text-brand-navy/60 text-center">
           Nhấn nút bên dưới để chấp nhận và xem dữ liệu được chia sẻ.
         </Text>
-        <Button
-          label="Chấp nhận lời mời"
-          variant="primary"
-          size="lg"
-          onPress={handleAccept}
-        />
-      </View>
+        <Button label="Chấp nhận lời mời" variant="primary" size="lg" onPress={handleAccept} />
+      </SafeAreaView>
     </>
   );
 }

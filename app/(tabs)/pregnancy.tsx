@@ -3,6 +3,7 @@ import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Svg, { Circle, Line, Polyline, Polygon, Rect } from 'react-native-svg';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { usePregnancyWeights } from '@/hooks/usePregnancyWeights';
@@ -36,7 +37,7 @@ const TRACK = '#ECEAF1';
 
 function ScreenHeader({ title }: HeaderProps) {
   return (
-    <View className="px-6 pt-12 pb-4">
+    <View className="px-6 pb-4 pt-3">
       <View className="flex-row items-center justify-between">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -296,228 +297,230 @@ export default function PregnancyTab() {
   const daysLeft = pregnancy.daysUntilDue != null ? Math.max(pregnancy.daysUntilDue, 0) : null;
 
   return (
-    <ScrollView
-      className="flex-1 bg-[#FFF8FA]"
-      refreshControl={<RefreshControl refreshing={dataLoading} onRefresh={onRefresh} />}
-      contentContainerStyle={{ paddingBottom: 34 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <ScreenHeader title="Theo dõi thai kỳ" />
-      <SegmentTabs />
+    <SafeAreaView className="flex-1 bg-[#FFF8FA]" edges={['top']}>
+      <ScrollView
+        className="flex-1"
+        refreshControl={<RefreshControl refreshing={dataLoading} onRefresh={onRefresh} />}
+        contentContainerStyle={{ paddingBottom: 34 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <ScreenHeader title="Theo dõi thai kỳ" />
+        <SegmentTabs />
 
-      <View className="px-5">
-        <Card className="mb-4 border-brand-pink-100" padding="lg">
-          <View className="flex-row items-center">
-            <View className="flex-1 pr-3">
-              <Text className="text-base font-bold text-brand-navy">Tuần thai thứ</Text>
-              <Text className="mt-2 text-5xl font-bold text-brand-pink-500">{currentWeek}</Text>
-              <Text className="mt-1 text-sm font-bold text-brand-navy">({weekDetail})</Text>
-              <View className="mt-3 flex-row items-center">
-                <Text className="text-xs font-bold text-brand-navy">Ngày dự sinh: {dueDate}</Text>
-                <View className="ml-2 h-6 w-6 items-center justify-center rounded-full bg-brand-blue/20">
-                  <Ionicons name="pencil" size={12} color={NAVY} />
+        <View className="px-5">
+          <Card className="mb-4 border-brand-pink-100" padding="lg">
+            <View className="flex-row items-center">
+              <View className="flex-1 pr-3">
+                <Text className="text-base font-bold text-brand-navy">Tuần thai thứ</Text>
+                <Text className="mt-2 text-5xl font-bold text-brand-pink-500">{currentWeek}</Text>
+                <Text className="mt-1 text-sm font-bold text-brand-navy">({weekDetail})</Text>
+                <View className="mt-3 flex-row items-center">
+                  <Text className="text-xs font-bold text-brand-navy">Ngày dự sinh: {dueDate}</Text>
+                  <View className="ml-2 h-6 w-6 items-center justify-center rounded-full bg-brand-blue/20">
+                    <Ionicons name="pencil" size={12} color={NAVY} />
+                  </View>
                 </View>
               </View>
+              <PregnancyIllustration />
             </View>
-            <PregnancyIllustration />
-          </View>
-          <ProgressBar progress={progress} />
-          <View className="mt-4 flex-row justify-between">
-            <Text className="text-xs font-bold text-brand-navy">
-              Tam cá nguyệt thứ {pregnancy.trimester}
-            </Text>
-            <Text className="text-xs font-bold text-brand-navy">
-              {daysLeft != null ? `Còn ${Math.ceil(daysLeft / 7)} tuần nữa` : 'Đang cập nhật'}
-            </Text>
-          </View>
-        </Card>
-
-        <View className="mb-4 flex-row items-center rounded-card border border-[#FFD9B8] bg-[#FFF7EA] p-4">
-          <Text className="flex-1 text-xs font-semibold leading-5 text-[#B56A24]">
-            Mẹ ơi, con của mẹ đang phát triển rất tốt! Hãy duy trì chế độ dinh dưỡng và nghỉ ngơi
-            hợp lý nhé.
-          </Text>
-          <View className="ml-3 h-10 w-10 items-center justify-center rounded-full bg-white">
-            <Text style={{ fontSize: 22 }}>💝</Text>
-          </View>
-        </View>
-
-        <Card className="mb-4 border-brand-pink-100 bg-brand-pink-50" padding="lg">
-          <View className="flex-row items-center">
-            <View className="flex-1 pr-4">
-              <Text className="text-base font-bold text-brand-navy">Sự phát triển của bé</Text>
-              <Text className="mt-4 text-sm font-bold leading-5 text-brand-navy">
-                Thai nhi đang phát triển nhanh chóng.
+            <ProgressBar progress={progress} />
+            <View className="mt-4 flex-row justify-between">
+              <Text className="text-xs font-bold text-brand-navy">
+                Tam cá nguyệt thứ {pregnancy.trimester}
               </Text>
-              <Text className="mt-2 text-sm font-semibold leading-5 text-brand-navy/70">
-                Bé có thể đã nghe được âm thanh và cảm nhận được ánh sáng.
+              <Text className="text-xs font-bold text-brand-navy">
+                {daysLeft != null ? `Còn ${Math.ceil(daysLeft / 7)} tuần nữa` : 'Đang cập nhật'}
               </Text>
-              <TouchableOpacity
-                onPress={() => router.push('/(tabs)/knowledge')}
-                className="mt-5 self-start rounded-input bg-brand-pink-100 px-4 py-2"
-              >
-                <Text className="text-xs font-bold text-brand-pink-600">Xem chi tiết</Text>
-              </TouchableOpacity>
             </View>
-            <PregnancyIllustration compact />
-          </View>
-        </Card>
+          </Card>
 
-        <Card className="mb-4" padding="lg">
-          <View className="mb-5 flex-row items-center justify-between">
-            <Text className="text-base font-bold text-brand-navy">Chỉ số của mẹ</Text>
-            <Text className="text-xs font-bold text-brand-navy/50">Cập nhật: Hôm nay</Text>
+          <View className="mb-4 flex-row items-center rounded-card border border-[#FFD9B8] bg-[#FFF7EA] p-4">
+            <Text className="flex-1 text-xs font-semibold leading-5 text-[#B56A24]">
+              Mẹ ơi, con của mẹ đang phát triển rất tốt! Hãy duy trì chế độ dinh dưỡng và nghỉ ngơi
+              hợp lý nhé.
+            </Text>
+            <View className="ml-3 h-10 w-10 items-center justify-center rounded-full bg-white">
+              <Text style={{ fontSize: 22 }}>💝</Text>
+            </View>
           </View>
-          <View className="flex-row">
-            <MetricPill
-              icon="scale-bathroom"
-              label="Cân nặng"
-              value={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
-              accent={PINK}
+
+          <Card className="mb-4 border-brand-pink-100 bg-brand-pink-50" padding="lg">
+            <View className="flex-row items-center">
+              <View className="flex-1 pr-4">
+                <Text className="text-base font-bold text-brand-navy">Sự phát triển của bé</Text>
+                <Text className="mt-4 text-sm font-bold leading-5 text-brand-navy">
+                  Thai nhi đang phát triển nhanh chóng.
+                </Text>
+                <Text className="mt-2 text-sm font-semibold leading-5 text-brand-navy/70">
+                  Bé có thể đã nghe được âm thanh và cảm nhận được ánh sáng.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/(tabs)/knowledge')}
+                  className="mt-5 self-start rounded-input bg-brand-pink-100 px-4 py-2"
+                >
+                  <Text className="text-xs font-bold text-brand-pink-600">Xem chi tiết</Text>
+                </TouchableOpacity>
+              </View>
+              <PregnancyIllustration compact />
+            </View>
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <View className="mb-5 flex-row items-center justify-between">
+              <Text className="text-base font-bold text-brand-navy">Chỉ số của mẹ</Text>
+              <Text className="text-xs font-bold text-brand-navy/50">Cập nhật: Hôm nay</Text>
+            </View>
+            <View className="flex-row">
+              <MetricPill
+                icon="scale-bathroom"
+                label="Cân nặng"
+                value={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
+                accent={PINK}
+              />
+              <MetricPill icon="heart-pulse" label="Huyết áp" value="110/70" accent="#6B8BFF" />
+              <MetricPill icon="water" label="Đường huyết" value="4.8 mmol/L" accent="#20B7A8" />
+              <MetricPill icon="heart" label="Nhịp tim" value="78 bpm" accent="#FF6D91" />
+            </View>
+            {weightDelta != null && (
+              <Text className="mt-3 text-xs font-semibold text-brand-navy/60">
+                Cân nặng thay đổi {weightDelta >= 0 ? '+' : ''}
+                {weightDelta.toFixed(1)} kg từ lần ghi đầu tiên.
+              </Text>
+            )}
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <Text className="mb-4 text-base font-bold text-brand-navy">Theo dõi cơ thể mẹ</Text>
+            <View className="flex-row">
+              <View className="flex-1 pr-4">
+                <Text className="text-xs font-semibold text-brand-navy/60">Cân nặng</Text>
+                <Text className="text-sm font-bold text-brand-navy">
+                  {weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
+                </Text>
+                <MiniLineChart color={PINK} values={chartValues} />
+                <TouchableOpacity onPress={() => router.push('/(maternal)/weight')}>
+                  <Text className="text-center text-xs font-bold text-[#5A8CFF]">Xem lịch sử</Text>
+                </TouchableOpacity>
+              </View>
+              <View className="w-px bg-brand-gray" />
+              <View className="flex-1 pl-4">
+                <Text className="text-xs font-semibold text-brand-navy/60">Chiều cao tử cung</Text>
+                <Text className="text-sm font-bold text-brand-navy">24 cm</Text>
+                <MiniLineChart color="#FF4F7B" values={[20, 24, 29, 33, 40]} />
+                <TouchableOpacity onPress={() => router.push('/(maternal)/prenatal-visits')}>
+                  <Text className="text-center text-xs font-bold text-[#5A8CFF]">Xem lịch sử</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <View className="flex-row items-center">
+              <View className="flex-1 pr-3">
+                <Text className="text-base font-bold text-brand-navy">Đếm thai máy</Text>
+                <Text className="mt-3 text-xs font-semibold leading-5 text-brand-navy/60">
+                  Theo dõi số lần thai máy mỗi ngày để đảm bảo bé khỏe mạnh.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/(maternal)/kick-counter')}
+                  className="mt-4 self-start rounded-input bg-brand-pink-100 px-4 py-2"
+                >
+                  <Text className="text-xs font-bold text-brand-pink-600">Đếm ngay</Text>
+                </TouchableOpacity>
+              </View>
+              <View className="h-24 w-28 items-center justify-center rounded-full bg-brand-lavender-50">
+                <Text style={{ fontSize: 42 }}>👣</Text>
+                <Text className="mt-1 text-xs font-bold text-brand-pink-500">{todayKickCount}</Text>
+              </View>
+            </View>
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-base font-bold text-brand-navy">Việc cần làm</Text>
+              <Text className="text-xs font-bold text-brand-navy/60">3/5 đã hoàn thành</Text>
+            </View>
+            <TodoItem title="Uống vitamin tổng hợp" body="1 viên sau bữa sáng" done />
+            <TodoItem title="Đi bộ 20 phút" body="Vận động nhẹ nhàng tốt cho mẹ và bé" done />
+            <TodoItem
+              title="Theo dõi cân nặng"
+              body={weightKg != null ? 'Đã có số đo mới nhất' : 'Cập nhật cân nặng tuần này'}
+              done={weightKg != null}
             />
-            <MetricPill icon="heart-pulse" label="Huyết áp" value="110/70" accent="#6B8BFF" />
-            <MetricPill icon="water" label="Đường huyết" value="4.8 mmol/L" accent="#20B7A8" />
-            <MetricPill icon="heart" label="Nhịp tim" value="78 bpm" accent="#FF6D91" />
-          </View>
-          {weightDelta != null && (
-            <Text className="mt-3 text-xs font-semibold text-brand-navy/60">
-              Cân nặng thay đổi {weightDelta >= 0 ? '+' : ''}
-              {weightDelta.toFixed(1)} kg từ lần ghi đầu tiên.
-            </Text>
-          )}
-        </Card>
+            <TodoItem title="Đọc về dinh dưỡng thai kỳ" body="Tìm hiểu thực phẩm tốt cho bé" />
+            <TodoItem
+              title="Khám thai định kỳ"
+              body={
+                nextVisit
+                  ? `Lần khám tiếp theo: ${format(parseISO(nextVisit.scheduled_at), 'dd/MM/yyyy')}`
+                  : 'Đặt lịch khám tiếp theo'
+              }
+            />
+          </Card>
 
-        <Card className="mb-4" padding="lg">
-          <Text className="mb-4 text-base font-bold text-brand-navy">Theo dõi cơ thể mẹ</Text>
-          <View className="flex-row">
-            <View className="flex-1 pr-4">
-              <Text className="text-xs font-semibold text-brand-navy/60">Cân nặng</Text>
-              <Text className="text-sm font-bold text-brand-navy">
-                {weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
-              </Text>
-              <MiniLineChart color={PINK} values={chartValues} />
-              <TouchableOpacity onPress={() => router.push('/(maternal)/weight')}>
-                <Text className="text-center text-xs font-bold text-[#5A8CFF]">Xem lịch sử</Text>
-              </TouchableOpacity>
-            </View>
-            <View className="w-px bg-brand-gray" />
-            <View className="flex-1 pl-4">
-              <Text className="text-xs font-semibold text-brand-navy/60">Chiều cao tử cung</Text>
-              <Text className="text-sm font-bold text-brand-navy">24 cm</Text>
-              <MiniLineChart color="#FF4F7B" values={[20, 24, 29, 33, 40]} />
+          <Card className="mb-4" padding="lg">
+            <View className="mb-3 flex-row items-center justify-between">
+              <Text className="text-base font-bold text-brand-navy">Lịch khám thai kỳ</Text>
               <TouchableOpacity onPress={() => router.push('/(maternal)/prenatal-visits')}>
-                <Text className="text-center text-xs font-bold text-[#5A8CFF]">Xem lịch sử</Text>
+                <Text className="text-xs font-bold text-brand-navy">Xem tất cả ›</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <View className="flex-row items-center">
-            <View className="flex-1 pr-3">
-              <Text className="text-base font-bold text-brand-navy">Đếm thai máy</Text>
-              <Text className="mt-3 text-xs font-semibold leading-5 text-brand-navy/60">
-                Theo dõi số lần thai máy mỗi ngày để đảm bảo bé khỏe mạnh.
+            {nextVisit ? (
+              <VisitRow
+                date={format(parseISO(nextVisit.scheduled_at), 'dd/MM/yyyy - HH:mm')}
+                title={nextVisit.location ?? 'Lịch khám sắp tới'}
+                status="next"
+              />
+            ) : (
+              <Text className="text-xs font-semibold text-brand-navy/60">
+                Chưa có lịch khám sắp tới.
               </Text>
-              <TouchableOpacity
-                onPress={() => router.push('/(maternal)/kick-counter')}
-                className="mt-4 self-start rounded-input bg-brand-pink-100 px-4 py-2"
-              >
-                <Text className="text-xs font-bold text-brand-pink-600">Đếm ngay</Text>
+            )}
+            {pastVisits.slice(-2).map((visit) => (
+              <VisitRow
+                key={visit.id}
+                date={format(parseISO(visit.scheduled_at), 'dd/MM/yyyy - HH:mm')}
+                title={visit.location ?? 'Đã hoàn thành'}
+                status="done"
+              />
+            ))}
+          </Card>
+
+          <Card className="mb-4" padding="lg">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-base font-bold text-brand-navy">Gợi ý hôm nay</Text>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/knowledge')}>
+                <Text className="text-xs font-bold text-brand-navy">Xem tất cả ›</Text>
               </TouchableOpacity>
             </View>
-            <View className="h-24 w-28 items-center justify-center rounded-full bg-brand-lavender-50">
-              <Text style={{ fontSize: 42 }}>👣</Text>
-              <Text className="mt-1 text-xs font-bold text-brand-pink-500">{todayKickCount}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <AdviceCard title="Thực phẩm giàu sắt cho mẹ bầu" tag="Dinh dưỡng" emoji="🥗" />
+              <AdviceCard title="5 bài tập yoga tốt cho mẹ bầu" tag="Vận động" emoji="🧘‍♀️" />
+              <AdviceCard title="Mẹo ngủ ngon trong thai kỳ" tag="Giấc ngủ" emoji="😴" />
+            </ScrollView>
+          </Card>
+
+          <Card className="border-brand-pink-100 bg-brand-pink-50" padding="lg">
+            <View className="flex-row items-center">
+              <View className="flex-1">
+                <Text className="text-base font-bold text-brand-navy">Theo dõi hôm nay</Text>
+                <Text className="mt-2 text-xs font-semibold text-brand-navy/60">
+                  {todaySymptoms.length > 0
+                    ? `Bạn đã ghi ${todaySymptoms.length} triệu chứng hôm nay.`
+                    : 'Ghi lại triệu chứng nếu mẹ thấy cơ thể có thay đổi.'}
+                </Text>
+              </View>
+              <Svg width={82} height={70} viewBox="0 0 82 70">
+                <Rect x="20" y="10" width="42" height="52" rx="10" fill="#FFFFFF" />
+                <Rect x="28" y="4" width="26" height="12" rx="5" fill="#FF8FA8" />
+                <Line x1="31" y1="28" x2="53" y2="28" stroke={TRACK} strokeWidth="4" />
+                <Line x1="31" y1="40" x2="53" y2="40" stroke={TRACK} strokeWidth="4" />
+                <Polygon points="12,54 24,44 28,62" fill="#FF8FA8" opacity="0.35" />
+              </Svg>
             </View>
-          </View>
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-base font-bold text-brand-navy">Việc cần làm</Text>
-            <Text className="text-xs font-bold text-brand-navy/60">3/5 đã hoàn thành</Text>
-          </View>
-          <TodoItem title="Uống vitamin tổng hợp" body="1 viên sau bữa sáng" done />
-          <TodoItem title="Đi bộ 20 phút" body="Vận động nhẹ nhàng tốt cho mẹ và bé" done />
-          <TodoItem
-            title="Theo dõi cân nặng"
-            body={weightKg != null ? 'Đã có số đo mới nhất' : 'Cập nhật cân nặng tuần này'}
-            done={weightKg != null}
-          />
-          <TodoItem title="Đọc về dinh dưỡng thai kỳ" body="Tìm hiểu thực phẩm tốt cho bé" />
-          <TodoItem
-            title="Khám thai định kỳ"
-            body={
-              nextVisit
-                ? `Lần khám tiếp theo: ${format(parseISO(nextVisit.scheduled_at), 'dd/MM/yyyy')}`
-                : 'Đặt lịch khám tiếp theo'
-            }
-          />
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <View className="mb-3 flex-row items-center justify-between">
-            <Text className="text-base font-bold text-brand-navy">Lịch khám thai kỳ</Text>
-            <TouchableOpacity onPress={() => router.push('/(maternal)/prenatal-visits')}>
-              <Text className="text-xs font-bold text-brand-navy">Xem tất cả ›</Text>
-            </TouchableOpacity>
-          </View>
-          {nextVisit ? (
-            <VisitRow
-              date={format(parseISO(nextVisit.scheduled_at), 'dd/MM/yyyy - HH:mm')}
-              title={nextVisit.location ?? 'Lịch khám sắp tới'}
-              status="next"
-            />
-          ) : (
-            <Text className="text-xs font-semibold text-brand-navy/60">
-              Chưa có lịch khám sắp tới.
-            </Text>
-          )}
-          {pastVisits.slice(-2).map((visit) => (
-            <VisitRow
-              key={visit.id}
-              date={format(parseISO(visit.scheduled_at), 'dd/MM/yyyy - HH:mm')}
-              title={visit.location ?? 'Đã hoàn thành'}
-              status="done"
-            />
-          ))}
-        </Card>
-
-        <Card className="mb-4" padding="lg">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-base font-bold text-brand-navy">Gợi ý hôm nay</Text>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/knowledge')}>
-              <Text className="text-xs font-bold text-brand-navy">Xem tất cả ›</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <AdviceCard title="Thực phẩm giàu sắt cho mẹ bầu" tag="Dinh dưỡng" emoji="🥗" />
-            <AdviceCard title="5 bài tập yoga tốt cho mẹ bầu" tag="Vận động" emoji="🧘‍♀️" />
-            <AdviceCard title="Mẹo ngủ ngon trong thai kỳ" tag="Giấc ngủ" emoji="😴" />
-          </ScrollView>
-        </Card>
-
-        <Card className="border-brand-pink-100 bg-brand-pink-50" padding="lg">
-          <View className="flex-row items-center">
-            <View className="flex-1">
-              <Text className="text-base font-bold text-brand-navy">Theo dõi hôm nay</Text>
-              <Text className="mt-2 text-xs font-semibold text-brand-navy/60">
-                {todaySymptoms.length > 0
-                  ? `Bạn đã ghi ${todaySymptoms.length} triệu chứng hôm nay.`
-                  : 'Ghi lại triệu chứng nếu mẹ thấy cơ thể có thay đổi.'}
-              </Text>
-            </View>
-            <Svg width={82} height={70} viewBox="0 0 82 70">
-              <Rect x="20" y="10" width="42" height="52" rx="10" fill="#FFFFFF" />
-              <Rect x="28" y="4" width="26" height="12" rx="5" fill="#FF8FA8" />
-              <Line x1="31" y1="28" x2="53" y2="28" stroke={TRACK} strokeWidth="4" />
-              <Line x1="31" y1="40" x2="53" y2="40" stroke={TRACK} strokeWidth="4" />
-              <Polygon points="12,54 24,44 28,62" fill="#FF8FA8" opacity="0.35" />
-            </Svg>
-          </View>
-        </Card>
-      </View>
-    </ScrollView>
+          </Card>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

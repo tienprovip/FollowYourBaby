@@ -1,5 +1,5 @@
-import { View } from 'react-native';
 import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { useBabyStore } from '@/stores/babyStore';
 import EmptyState from '@/components/ui/EmptyState';
@@ -14,7 +14,7 @@ export default function TrackingTab() {
   if (activeBabyId) return <BabyTab />;
 
   return (
-    <View className="flex-1 bg-brand-peach">
+    <SafeAreaView className="flex-1 bg-brand-peach" edges={['top']}>
       <EmptyState
         title="Chưa có hành trình nào"
         body="Thêm thai kỳ hoặc hồ sơ em bé để bắt đầu theo dõi."
@@ -23,6 +23,6 @@ export default function TrackingTab() {
           onPress: () => router.push('/(tabs)/profile'),
         }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
