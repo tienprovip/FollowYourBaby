@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { differenceInDays, differenceInWeeks, parseISO } from 'date-fns';
+import { differenceInDays, parseISO, startOfDay } from 'date-fns';
 import { usePregnancies } from './usePregnancies';
 import { useBabyStore } from '@/stores/babyStore';
 import type { Database } from '@/types/database';
@@ -14,18 +14,21 @@ export function calculatePregnancyWeek(
   lmpDate: string | null,
   dueDate: string | null,
 ): number {
-  const now = new Date();
+  // startOfDay normalizes both sides to local midnight — avoids UTC offset errors (e.g. UTC+7)
+  const today = startOfDay(new Date());
 
-  if (lmpDate) {
-    const lmp = parseISO(lmpDate);
-    const days = differenceInDays(now, lmp);
-    return Math.max(0, Math.min(42, Math.floor(days / 7)));
+  // due_date takes priority — more reliable (often ultrasound-confirmed)
+  if (dueDate) {
+    const due = startOfDay(parseISO(dueDate));
+    const daysUntilDue = differenceInDays(due, today);
+    const daysElapsed = 280 - daysUntilDue;
+    return Math.max(0, Math.min(42, Math.floor(daysElapsed / 7)));
   }
 
-  if (dueDate) {
-    const due = parseISO(dueDate);
-    const weeksRemaining = differenceInWeeks(due, now);
-    return Math.max(0, Math.min(42, 40 - weeksRemaining));
+  if (lmpDate) {
+    const lmp = startOfDay(parseISO(lmpDate));
+    const days = differenceInDays(today, lmp);
+    return Math.max(0, Math.min(42, Math.floor(days / 7)));
   }
 
   return 0;
@@ -33,9 +36,7 @@ export function calculatePregnancyWeek(
 
 export function calculateDaysUntilDue(dueDate: string | null): number | null {
   if (!dueDate) return null;
-  const due = parseISO(dueDate);
-  const days = differenceInDays(due, new Date());
-  return days;
+  return differenceInDays(startOfDay(parseISO(dueDate)), startOfDay(new Date()));
 }
 
 // ---------------------------------------------------------------------------

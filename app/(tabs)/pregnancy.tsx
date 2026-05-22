@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Svg, { Circle, Line, Polyline, Polygon, Rect } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { differenceInDays, format, parseISO } from 'date-fns';
+import { differenceInDays, format, parseISO, startOfDay } from 'date-fns';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { usePregnancyWeights } from '@/hooks/usePregnancyWeights';
 import { useKickCounts } from '@/hooks/useKickCounts';
@@ -715,13 +715,18 @@ export default function PregnancyTab() {
   const dueDate = pregnancy.due_date
     ? format(parseISO(pregnancy.due_date), 'dd/MM/yyyy')
     : '--/--/----';
-  const weekDetail =
-    pregnancy.lmp_date != null
-      ? (() => {
-          const days = Math.max(0, differenceInDays(new Date(), parseISO(pregnancy.lmp_date)));
-          return `${Math.floor(days / 7)} tuần ${days % 7} ngày`;
-        })()
-      : `${currentWeek} tuần`;
+  const weekDetail = (() => {
+    const today = startOfDay(new Date());
+    if (pregnancy.due_date != null) {
+      const daysElapsed = Math.max(0, 280 - differenceInDays(startOfDay(parseISO(pregnancy.due_date)), today));
+      return `${Math.floor(daysElapsed / 7)} tuần ${daysElapsed % 7} ngày`;
+    }
+    if (pregnancy.lmp_date != null) {
+      const days = Math.max(0, differenceInDays(today, startOfDay(parseISO(pregnancy.lmp_date))));
+      return `${Math.floor(days / 7)} tuần ${days % 7} ngày`;
+    }
+    return `${currentWeek} tuần`;
+  })();
   const daysLeft = pregnancy.daysUntilDue != null ? Math.max(pregnancy.daysUntilDue, 0) : null;
 
   return (
