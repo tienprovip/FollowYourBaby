@@ -10,6 +10,7 @@ import { useBabies } from '@/hooks/useBabies';
 import { usePregnancies } from '@/hooks/usePregnancies';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { NotificationBell } from '@/components/ui';
+import Card from '@/components/ui/Card';
 import { babyAgeLabel } from '@/lib/babyUtils';
 import {
   calculateDaysUntilDue,
@@ -120,7 +121,7 @@ function SuggestionCard({ icon, title, subtitle, tint, onPress }: SuggestionCard
       <Text className="text-brand-navy mt-2 text-center text-sm font-bold">
         {title}
       </Text>
-      <Text className="mt-0.5 text-center text-[11px] font-semibold leading-4 text-brand-navy/55">
+      <Text className="mt-0.5 text-center text-xs font-semibold leading-4 text-brand-navy/55">
         {subtitle}
       </Text>
     </Pressable>
@@ -140,7 +141,7 @@ function QuickTool({ family, icon, label, color, background, onPress }: QuickToo
       >
         {renderIcon(family, icon, 25, color)}
       </View>
-      <Text className="mt-2 text-center text-[11px] font-bold leading-4 text-brand-navy">
+      <Text className="mt-2 text-center text-xs font-bold leading-4 text-brand-navy">
         {label}
       </Text>
     </Pressable>
@@ -151,10 +152,10 @@ function MetricPill({ label, value, subtitle, color }: MetricPillProps) {
   return (
     <View className="flex-1">
       <Text className="text-xs font-bold text-brand-navy/70">{label}</Text>
-      <Text className="mt-1 text-[15px] font-extrabold" style={{ color }}>
+      <Text className="mt-1 text-sm font-bold" style={{ color }}>
         {value}
       </Text>
-      <Text className="mt-0.5 text-[11px] font-semibold text-brand-navy/45">
+      <Text className="mt-0.5 text-xs font-semibold text-brand-navy/45">
         {subtitle}
       </Text>
     </View>
@@ -167,10 +168,10 @@ function BabyStat({ family, icon, label, value, color }: BabyStatProps) {
       <View className="h-7 w-7 rounded-full items-center justify-center bg-brand-lavender-50">
         {renderIcon(family, icon, 16, color)}
       </View>
-      <Text className="mt-1 text-[10px] font-bold text-brand-navy/55">
+      <Text className="mt-1 text-[10px] font-semibold text-brand-navy/55">
         {label}
       </Text>
-      <Text className="mt-0.5 text-center text-[11px] font-extrabold text-brand-navy">
+      <Text className="mt-0.5 text-center text-xs font-bold text-brand-navy">
         {value}
       </Text>
     </View>
@@ -189,19 +190,19 @@ function SectionShell({
   children: React.ReactNode;
 }) {
   return (
-    <View className="mx-4 mb-3 rounded-card border border-brand-pink-100 bg-white p-4 shadow-brand">
-      <View className="mb-3 flex-row items-center justify-between">
-        <Text className="text-[17px] font-extrabold text-brand-navy">{title}</Text>
+    <Card className="mx-5 mb-4" padding="lg">
+      <View className="mb-4 flex-row items-center justify-between">
+        <Text className="text-base font-bold text-brand-navy">{title}</Text>
         {actionLabel && onAction && (
           <Pressable onPress={onAction} accessibilityRole="button">
-            <Text className="text-[13px] font-bold text-brand-navy/60">
+            <Text className="text-xs font-bold text-brand-navy/60">
               {actionLabel} ›
             </Text>
           </Pressable>
         )}
       </View>
       {children}
-    </View>
+    </Card>
   );
 }
 
@@ -221,12 +222,12 @@ function MiniTrend({ color }: { color: string }) {
 
 function EmptyHomeState({ onPress }: { onPress: () => void }) {
   return (
-    <View className="mx-4 mt-8 rounded-card border border-brand-pink-100 bg-white p-5 shadow-brand">
+    <Card className="mx-5 mt-8 border-brand-pink-100" padding="lg">
       <Text className="text-4xl">🌷</Text>
-      <Text className="mt-3 text-xl font-extrabold text-brand-navy">
+      <Text className="mt-3 text-xl font-bold text-brand-navy">
         Bắt đầu hành trình của mẹ
       </Text>
-      <Text className="mt-2 text-[15px] leading-6 text-brand-navy/65">
+      <Text className="mt-2 text-sm leading-6 text-brand-navy/65">
         Thêm thai kỳ hoặc hồ sơ bé để trang chủ hiển thị gợi ý, chỉ số theo dõi
         và công cụ nhanh phù hợp mỗi ngày.
       </Text>
@@ -235,11 +236,11 @@ function EmptyHomeState({ onPress }: { onPress: () => void }) {
         accessibilityRole="button"
         className="mt-5 rounded-btn bg-brand-pink px-4 py-3"
       >
-        <Text className="text-center text-[15px] font-extrabold text-white">
+        <Text className="text-center text-sm font-bold text-white">
           Cập nhật hồ sơ
         </Text>
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
@@ -307,10 +308,10 @@ export default function HomeScreen() {
                 <Text className="text-4xl">{isBabyCase ? '👩‍🍼' : '🤰'}</Text>
               </View>
               <View className="flex-1">
-                <Text className="text-xl font-extrabold text-brand-navy">
+                <Text className="text-xl font-bold text-brand-navy">
                   {greeting} 👋
                 </Text>
-                <Text className="mt-1 text-[15px] font-semibold text-brand-navy/65">
+                <Text className="mt-1 text-sm font-semibold text-brand-navy/65">
                   {isBabyCase
                     ? `Chúc ${firstName} và bé một ngày tuyệt vời`
                     : `Chúc ${firstName} một ngày tốt lành`}
@@ -325,7 +326,7 @@ export default function HomeScreen() {
           <EmptyHomeState onPress={() => router.push('/(tabs)/profile')} />
         ) : isBabyCase ? (
           <>
-            <View className="mx-4 mb-3 rounded-card border border-brand-pink-100 bg-white p-4 shadow-brand">
+            <Card className="mx-5 mb-4 border-brand-lavender-100" padding="lg">
               <View className="flex-row items-center">
                 <View className="h-24 w-24 items-center justify-center rounded-full border-4 border-brand-lavender-100 bg-brand-pink-50">
                   {baby?.photo_url ? (
@@ -339,7 +340,7 @@ export default function HomeScreen() {
                 </View>
                 <View className="ml-4 flex-1">
                   <View className="flex-row items-center">
-                    <Text className="text-brand-navy text-2xl font-extrabold">
+                    <Text className="text-brand-navy text-2xl font-bold">
                       {baby?.name ?? 'Bé yêu'}
                     </Text>
                     <Pressable
@@ -350,10 +351,10 @@ export default function HomeScreen() {
                       <Ionicons name="pencil" size={15} color="#1F2B5B" />
                     </Pressable>
                   </View>
-                  <Text className="mt-2 text-[15px] font-extrabold text-brand-lavender-700">
+                  <Text className="mt-2 text-sm font-bold text-brand-lavender-700">
                     {babyAge}
                   </Text>
-                  <Text className="mt-2 text-[15px] font-semibold text-brand-navy/70">
+                  <Text className="mt-2 text-sm font-semibold text-brand-navy/70">
                     Ngày sinh: {formatDate(baby?.dob ?? null)}
                   </Text>
                 </View>
@@ -389,7 +390,7 @@ export default function HomeScreen() {
                   color="#26A6C8"
                 />
               </View>
-            </View>
+            </Card>
 
             <SectionShell
               title="Gợi ý hôm nay"
@@ -425,20 +426,20 @@ export default function HomeScreen() {
               <View className="flex-row gap-3">
                 <View className="flex-1 rounded-input border border-brand-gray bg-white p-3">
                   <Text className="text-sm font-bold text-brand-navy/70">Chiều cao</Text>
-                  <Text className="mt-1 text-lg font-extrabold text-brand-navy">
+                  <Text className="mt-1 text-base font-bold text-brand-navy">
                     {formatBabyLength(latestGrowth?.length_cm ?? baby?.birth_length_cm)}
                   </Text>
-                  <Text className="text-[11px] font-semibold text-brand-lavender-700">
+                  <Text className="text-xs font-semibold text-brand-lavender-700">
                     +1.5 cm so với tháng trước
                   </Text>
                   <MiniTrend color="#B79CFF" />
                 </View>
                 <View className="flex-1 rounded-input border border-brand-gray bg-white p-3">
                   <Text className="text-sm font-bold text-brand-navy/70">Cân nặng</Text>
-                  <Text className="mt-1 text-lg font-extrabold text-brand-navy">
+                  <Text className="mt-1 text-base font-bold text-brand-navy">
                     {formatBabyWeight(latestGrowth?.weight_g ?? baby?.birth_weight_g)}
                   </Text>
-                  <Text className="text-[11px] font-semibold text-brand-lavender-700">
+                  <Text className="text-xs font-semibold text-brand-lavender-700">
                     +0.6 kg so với tháng trước
                   </Text>
                   <MiniTrend color="#B79CFF" />
@@ -485,21 +486,21 @@ export default function HomeScreen() {
           </>
         ) : (
           <>
-            <View className="mx-4 mb-3 rounded-card border border-brand-pink-100 bg-white p-4 shadow-brand">
+            <Card className="mx-5 mb-4 border-brand-pink-100" padding="lg">
               <View className="flex-row items-center justify-between">
                 <View className="flex-1 pr-4">
-                  <Text className="text-lg font-extrabold text-brand-navy">
+                  <Text className="text-base font-bold text-brand-navy">
                     Tuần thai thứ <Text className="text-brand-pink-500">{pregnancyWeek}</Text>
                   </Text>
-                  <Text className="mt-3 text-5xl font-extrabold text-brand-pink-500">
+                  <Text className="mt-3 text-5xl font-bold text-brand-pink-500">
                     {pregnancyWeek}
                   </Text>
-                  <Text className="mt-1 text-[15px] font-semibold text-brand-navy/70">
+                  <Text className="mt-1 text-sm font-semibold text-brand-navy/70">
                     {daysUntilDue !== null
                       ? `(${daysUntilDue} ngày nữa)`
                       : '(đang cập nhật ngày dự sinh)'}
                   </Text>
-                  <Text className="mt-2 text-[15px] font-semibold text-brand-navy/70">
+                  <Text className="mt-2 text-sm font-semibold text-brand-navy/70">
                     Ngày dự sinh: {formatDate(pregnancy?.due_date ?? null)}
                   </Text>
                 </View>
@@ -522,7 +523,7 @@ export default function HomeScreen() {
                   <Text className="text-brand-navy/50 text-[10px] font-bold">Tuần 40</Text>
                 </View>
               </View>
-            </View>
+            </Card>
 
             <SectionShell
               title="Gợi ý hôm nay"
@@ -626,8 +627,8 @@ export default function HomeScreen() {
           </>
         )}
 
-        <View className="mx-4 mt-1 rounded-card border border-brand-pink-100 bg-brand-pink-50 p-4">
-          <Text className="text-base font-extrabold text-brand-pink-600">
+        <Card className="mx-5 mb-4 mt-1 border-brand-pink-100 bg-brand-pink-50" padding="lg">
+          <Text className="text-base font-bold text-brand-pink-600">
             Việc cần làm
           </Text>
           <View className="mt-3 gap-3">
@@ -656,7 +657,7 @@ export default function HomeScreen() {
                   <Ionicons name={icon as IonIconName} size={20} color="#B79CFF" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-sm font-extrabold text-brand-navy">{title}</Text>
+                  <Text className="text-sm font-bold text-brand-navy">{title}</Text>
                   <Text className="mt-0.5 text-xs font-semibold leading-5 text-brand-navy/60">
                     {subtitle}
                   </Text>
@@ -664,7 +665,7 @@ export default function HomeScreen() {
               </View>
             ))}
           </View>
-        </View>
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );

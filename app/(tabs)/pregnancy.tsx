@@ -730,7 +730,7 @@ export default function PregnancyTab() {
   const daysLeft = pregnancy.daysUntilDue != null ? Math.max(pregnancy.daysUntilDue, 0) : null;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFF8FA]" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-brand-peach" edges={['top']}>
       <ScrollView
         className="flex-1"
         refreshControl={<RefreshControl refreshing={dataLoading} onRefresh={onRefresh} />}
