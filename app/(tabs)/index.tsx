@@ -12,10 +12,7 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import { NotificationBell } from '@/components/ui';
 import Card from '@/components/ui/Card';
 import { babyAgeLabel } from '@/lib/babyUtils';
-import {
-  calculateDaysUntilDue,
-  calculatePregnancyWeek,
-} from '@/hooks/usePregnancy';
+import { calculateDaysUntilDue, calculatePregnancyWeek } from '@/hooks/usePregnancy';
 
 type IconFamily = 'ion' | 'material';
 type IonIconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -60,13 +57,7 @@ function renderIcon(
   color: string,
 ) {
   if (family === 'material') {
-    return (
-      <MaterialCommunityIcons
-        name={icon as MaterialIconName}
-        size={size}
-        color={color}
-      />
-    );
+    return <MaterialCommunityIcons name={icon as MaterialIconName} size={size} color={color} />;
   }
 
   return <Ionicons name={icon as IonIconName} size={size} color={color} />;
@@ -108,8 +99,8 @@ function SuggestionCard({ icon, title, subtitle, tint, onPress }: SuggestionCard
     tint === 'lavender'
       ? 'bg-brand-lavender-50 border-brand-lavender-100'
       : tint === 'blue'
-      ? 'bg-soft-blue-50 border-soft-blue-100'
-      : 'bg-brand-pink-50 border-brand-pink-100';
+        ? 'bg-soft-blue-50 border-soft-blue-100'
+        : 'bg-brand-pink-50 border-brand-pink-100';
 
   return (
     <Pressable
@@ -118,9 +109,7 @@ function SuggestionCard({ icon, title, subtitle, tint, onPress }: SuggestionCard
       className={`flex-1 min-h-[88px] rounded-input border ${tintClass} items-center justify-center px-2 py-3 active:opacity-75`}
     >
       <Text className="text-3xl">{icon}</Text>
-      <Text className="text-brand-navy mt-2 text-center text-sm font-bold">
-        {title}
-      </Text>
+      <Text className="text-brand-navy mt-2 text-center text-sm font-bold">{title}</Text>
       <Text className="mt-0.5 text-center text-xs font-semibold leading-4 text-brand-navy/55">
         {subtitle}
       </Text>
@@ -141,9 +130,7 @@ function QuickTool({ family, icon, label, color, background, onPress }: QuickToo
       >
         {renderIcon(family, icon, 25, color)}
       </View>
-      <Text className="mt-2 text-center text-xs font-bold leading-4 text-brand-navy">
-        {label}
-      </Text>
+      <Text className="mt-2 text-center text-xs font-bold leading-4 text-brand-navy">{label}</Text>
     </Pressable>
   );
 }
@@ -155,9 +142,7 @@ function MetricPill({ label, value, subtitle, color }: MetricPillProps) {
       <Text className="mt-1 text-sm font-bold" style={{ color }}>
         {value}
       </Text>
-      <Text className="mt-0.5 text-xs font-semibold text-brand-navy/45">
-        {subtitle}
-      </Text>
+      <Text className="mt-0.5 text-xs font-semibold text-brand-navy/45">{subtitle}</Text>
     </View>
   );
 }
@@ -168,12 +153,8 @@ function BabyStat({ family, icon, label, value, color }: BabyStatProps) {
       <View className="h-7 w-7 rounded-full items-center justify-center bg-brand-lavender-50">
         {renderIcon(family, icon, 16, color)}
       </View>
-      <Text className="mt-1 text-[10px] font-semibold text-brand-navy/55">
-        {label}
-      </Text>
-      <Text className="mt-0.5 text-center text-xs font-bold text-brand-navy">
-        {value}
-      </Text>
+      <Text className="mt-1 text-[10px] font-semibold text-brand-navy/55">{label}</Text>
+      <Text className="mt-0.5 text-center text-xs font-bold text-brand-navy">{value}</Text>
     </View>
   );
 }
@@ -195,9 +176,7 @@ function SectionShell({
         <Text className="text-base font-bold text-brand-navy">{title}</Text>
         {actionLabel && onAction && (
           <Pressable onPress={onAction} accessibilityRole="button">
-            <Text className="text-xs font-bold text-brand-navy/60">
-              {actionLabel} ›
-            </Text>
+            <Text className="text-xs font-bold text-brand-navy/60">{actionLabel} ›</Text>
           </Pressable>
         )}
       </View>
@@ -224,21 +203,17 @@ function EmptyHomeState({ onPress }: { onPress: () => void }) {
   return (
     <Card className="mx-5 mt-8 border-brand-pink-100" padding="lg">
       <Text className="text-4xl">🌷</Text>
-      <Text className="mt-3 text-xl font-bold text-brand-navy">
-        Bắt đầu hành trình của mẹ
-      </Text>
+      <Text className="mt-3 text-xl font-bold text-brand-navy">Bắt đầu hành trình của mẹ</Text>
       <Text className="mt-2 text-sm leading-6 text-brand-navy/65">
-        Thêm thai kỳ hoặc hồ sơ bé để trang chủ hiển thị gợi ý, chỉ số theo dõi
-        và công cụ nhanh phù hợp mỗi ngày.
+        Thêm thai kỳ hoặc hồ sơ bé để trang chủ hiển thị gợi ý, chỉ số theo dõi và công cụ nhanh phù
+        hợp mỗi ngày.
       </Text>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
         className="mt-5 rounded-btn bg-brand-pink px-4 py-3"
       >
-        <Text className="text-center text-sm font-bold text-white">
-          Cập nhật hồ sơ
-        </Text>
+        <Text className="text-center text-sm font-bold text-white">Cập nhật hồ sơ</Text>
       </Pressable>
     </Card>
   );
@@ -274,21 +249,14 @@ export default function HomeScreen() {
   const feedCount = dashboard.feeds.todayLogs?.length ?? 0;
   const computedPregnancyWeek =
     dashboard.pregnancy?.currentWeek ??
-    (pregnancy
-      ? calculatePregnancyWeek(pregnancy.lmp_date, pregnancy.due_date)
-      : 22);
+    (pregnancy ? calculatePregnancyWeek(pregnancy.lmp_date, pregnancy.due_date) : 22);
   const computedDaysUntilDue =
     dashboard.pregnancy?.daysUntilDue ??
     (pregnancy ? calculateDaysUntilDue(pregnancy.due_date) : null);
-  const weekProgress = Math.min(
-    100,
-    Math.max(3, (computedPregnancyWeek / 40) * 100),
-  );
+  const weekProgress = Math.min(100, Math.max(3, (computedPregnancyWeek / 40) * 100));
   const daysUntilDue = computedDaysUntilDue;
   const pregnancyWeek = computedPregnancyWeek;
-  const daysUntilNextVisit = getDaysUntilDate(
-    dashboard.prenatalVisits.nextVisit?.scheduled_at,
-  );
+  const daysUntilNextVisit = getDaysUntilDate(dashboard.prenatalVisits.nextVisit?.scheduled_at);
   const babyAge = baby
     ? 'ageLabel' in baby && typeof baby.ageLabel === 'string'
       ? baby.ageLabel
@@ -301,16 +269,14 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
-        <View className="px-4 pb-2 pt-5">
+        <View className="px-4 pb-4 pt-5">
           <View className="flex-row items-center justify-between">
             <View className="flex-row flex-1 items-center">
               <View className="mr-3 h-16 w-16 items-center justify-center rounded-full bg-brand-pink-100">
                 <Text className="text-4xl">{isBabyCase ? '👩‍🍼' : '🤰'}</Text>
               </View>
               <View className="flex-1">
-                <Text className="text-xl font-bold text-brand-navy">
-                  {greeting} 👋
-                </Text>
+                <Text className="text-xl font-bold text-brand-navy">{greeting} 👋</Text>
                 <Text className="mt-1 text-sm font-semibold text-brand-navy/65">
                   {isBabyCase
                     ? `Chúc ${firstName} và bé một ngày tuyệt vời`
@@ -351,9 +317,7 @@ export default function HomeScreen() {
                       <Ionicons name="pencil" size={15} color="#1F2B5B" />
                     </Pressable>
                   </View>
-                  <Text className="mt-2 text-sm font-bold text-brand-lavender-700">
-                    {babyAge}
-                  </Text>
+                  <Text className="mt-2 text-sm font-bold text-brand-lavender-700">{babyAge}</Text>
                   <Text className="mt-2 text-sm font-semibold text-brand-navy/70">
                     Ngày sinh: {formatDate(baby?.dob ?? null)}
                   </Text>
@@ -629,19 +593,33 @@ export default function HomeScreen() {
         )}
 
         <Card className="mx-5 mb-4 mt-1 border-brand-pink-100 bg-brand-pink-50" padding="lg">
-          <Text className="text-base font-bold text-brand-pink-600">
-            Việc cần làm
-          </Text>
+          <Text className="text-base font-bold text-brand-pink-600">Việc cần làm</Text>
           <View className="mt-3 gap-3">
             {(isBabyCase
               ? [
-                  ['restaurant-outline', 'Ghi lại cữ bú hôm nay', 'Theo dõi lượng bú và thời điểm gần nhất'],
+                  [
+                    'restaurant-outline',
+                    'Ghi lại cữ bú hôm nay',
+                    'Theo dõi lượng bú và thời điểm gần nhất',
+                  ],
                   ['moon-outline', 'Cập nhật giấc ngủ', 'Ghi giấc ngủ ban ngày và giấc đêm của bé'],
-                  ['bar-chart-outline', 'Kiểm tra tăng trưởng', 'Cập nhật cân nặng, chiều cao khi có số đo mới'],
-                  ['notifications-outline', 'Xem nhắc nhở sắp tới', 'Tiêm chủng, thuốc và lịch khám của bé'],
+                  [
+                    'bar-chart-outline',
+                    'Kiểm tra tăng trưởng',
+                    'Cập nhật cân nặng, chiều cao khi có số đo mới',
+                  ],
+                  [
+                    'notifications-outline',
+                    'Xem nhắc nhở sắp tới',
+                    'Tiêm chủng, thuốc và lịch khám của bé',
+                  ],
                 ]
               : [
-                  ['medical-outline', 'Uống thuốc bổ', 'Nhắc mẹ uống vitamin và thuốc bổ đúng lịch'],
+                  [
+                    'medical-outline',
+                    'Uống thuốc bổ',
+                    'Nhắc mẹ uống vitamin và thuốc bổ đúng lịch',
+                  ],
                   [
                     'calendar-outline',
                     'Lịch khám định kỳ',
@@ -650,7 +628,11 @@ export default function HomeScreen() {
                       : `Còn ${daysUntilNextVisit} ngày đến lịch khám`,
                   ],
                   ['walk-outline', 'Vận động nhẹ nhàng', 'Đi bộ hoặc giãn cơ nhẹ theo sức của mẹ'],
-                  ['water-outline', 'Uống 2 lít nước', 'Chia nhỏ lượng nước trong ngày để mẹ dễ theo dõi'],
+                  [
+                    'water-outline',
+                    'Uống 2 lít nước',
+                    'Chia nhỏ lượng nước trong ngày để mẹ dễ theo dõi',
+                  ],
                 ]
             ).map(([icon, title, subtitle]) => (
               <View key={title} className="flex-row items-center rounded-input bg-white px-3 py-3">
