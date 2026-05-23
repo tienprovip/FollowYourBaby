@@ -505,7 +505,8 @@ export default function HomeScreen() {
                   </Text>
                 </View>
                 <View className="h-32 w-32 items-center justify-center rounded-full bg-brand-pink-100">
-                  <View className="h-24 w-24 items-center justify-center rounded-full bg-brand-pink-200">
+                  <View className="absolute h-full w-full rounded-full border-8 border-brand-pink-300" />
+                  <View className="h-24 w-24 items-center justify-center rounded-full bg-[#FFBBC6]">
                     <Text className="text-6xl">👶</Text>
                   </View>
                 </View>
