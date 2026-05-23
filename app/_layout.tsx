@@ -105,6 +105,12 @@ function NavigationGuard() {
     const inIntroGroup = segment === '(intro)';
     const inInviteGroup = segment === 'invite';
     const inTabsGroup = segment === '(tabs)';
+    const inAuthenticatedGroup =
+      inTabsGroup ||
+      segment === '(maternal)' ||
+      segment === '(baby)' ||
+      segment === '(milestones)' ||
+      segment === '(profile)';
 
     // Allow the invite accept screen to render without re-routing
     if (inInviteGroup) return;
@@ -115,7 +121,7 @@ function NavigationGuard() {
       router.replace('/(auth)/login');
     } else if (introSeen && user && !user.onboardingCompleted && !inOnboardingGroup) {
       router.replace('/(onboarding)/journey');
-    } else if (introSeen && user && user.onboardingCompleted && !inTabsGroup) {
+    } else if (introSeen && user && user.onboardingCompleted && !inAuthenticatedGroup) {
       router.replace('/(tabs)');
     }
   }, [user, isLoading, segments, router, introSeen, introReady]);

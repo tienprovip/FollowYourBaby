@@ -118,7 +118,6 @@ interface WheelSheetProps {
   onConfirm: () => void;
   label?: string;
   minimumDate?: Date;
-  maximumDate?: Date;
 }
 
 function WheelSheet({
@@ -128,7 +127,6 @@ function WheelSheet({
   onConfirm,
   label,
   minimumDate,
-  maximumDate,
 }: WheelSheetProps) {
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = useWindowDimensions();
@@ -142,8 +140,8 @@ function WheelSheet({
   const wheelHeight = visibleCount * ITEM_H;
   const pad = ITEM_H * Math.floor(visibleCount / 2);
 
-  const minYear = minimumDate?.getFullYear() ?? new Date().getFullYear();
-  const maxYear = maximumDate?.getFullYear() ?? new Date().getFullYear() + 10;
+  const minYear = minimumDate?.getFullYear() ?? new Date().getFullYear() - 1;
+  const maxYear = new Date().getFullYear() + 10;
   const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => String(minYear + i));
 
   const [yearIdx, setYearIdx] = useState(Math.max(0, value.getFullYear() - minYear));
@@ -267,19 +265,16 @@ function DateField({
 
   return (
     <View className={cn('w-full', className)}>
-      {label && <Text className="text-slate-700 text-sm font-semibold mb-1">{label}</Text>}
+      {label && <Text className="mb-1 text-sm font-semibold text-brand-navy/70">{label}</Text>}
 
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label ?? placeholder}
         onPress={openPicker}
-        className={cn(
-          'flex-row items-center bg-white border rounded-xl px-3 min-h-[44px]',
-          hasError ? 'border-red-500' : 'border-rose-200',
-        )}
+        className="flex-row items-center bg-white rounded-input px-4 py-3"
+        style={{ borderWidth: 1, borderColor: hasError ? '#ef4444' : '#F7F7F7' }}
       >
-        <Text className="text-rose-400 mr-2">📅</Text>
-        <Text className={cn('flex-1 text-base py-2', value ? 'text-slate-900' : 'text-slate-400')}>
+        <Text className={cn('flex-1 text-base', value ? 'text-brand-navy' : 'text-brand-navy/40')}>
           {value ? formatDate(value) : placeholder}
         </Text>
       </Pressable>
@@ -314,7 +309,6 @@ function DateField({
               onConfirm={confirmIOS}
               label={label}
               minimumDate={minimumDate}
-              maximumDate={maximumDate}
             />
           </View>
         </Modal>

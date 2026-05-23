@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Text, View } from 'react-native';
 import Svg, { Circle, G, Line, Path, Text as SvgText } from 'react-native-svg';
+import { differenceInDays, parseISO, subDays } from 'date-fns';
 import type { WeightGainPoint } from '@/lib/standards/weightGainCurves';
 import { getWeightGainCurve } from '@/lib/standards/weightGainCurves';
 import type { BmiCategory } from '@/lib/standards/weightGainCurves';
@@ -14,6 +15,8 @@ interface WeightChartProps {
   /** User's pre-pregnancy weight (kg) — required to compute gain */
   baseWeightKg: number | null;
   bmiCategory?: BmiCategory;
+  /** ISO date string — used to compute accurate week positions for each entry */
+  dueDate?: string | null;
   width?: number;
   height?: number;
 }
@@ -25,6 +28,7 @@ function WeightChart({
   pregnancyWeek,
   baseWeightKg,
   bmiCategory = 'normal',
+  dueDate,
   width = 320,
   height = 200,
 }: WeightChartProps) {
@@ -32,6 +36,18 @@ function WeightChart({
   const chartHeight = height - CHART_PADDING.top - CHART_PADDING.bottom;
 
   const curve = useMemo(() => getWeightGainCurve(bmiCategory), [bmiCategory]);
+
+  // LMP = due_date - 280 days; used to map recorded_at → pregnancy week
+  const lmpDate = useMemo(() => (dueDate ? subDays(parseISO(dueDate), 280) : null), [dueDate]);
+
+  function weekForEntry(recordedAt: string): number {
+    if (lmpDate) {
+      const days = differenceInDays(parseISO(recordedAt), lmpDate);
+      return Math.max(0, Math.min(40, Math.floor(days / 7)));
+    }
+    // fallback: approximate from current week (legacy behaviour)
+    return pregnancyWeek;
+  }
 
   // We plot weeks 0–40 on x-axis
   const xMin = 0;
@@ -117,8 +133,7 @@ function WeightChart({
       ? weightGains
           .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime())
           .map((w, i) => {
-            // approximate week from recorded_at — use index as fallback
-            const x = toX(Math.min(40, pregnancyWeek - (weights.length - 1 - i)));
+            const x = toX(weekForEntry(w.recorded_at));
             const y = toY(w.gain);
             return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
           })
@@ -162,8 +177,8 @@ function WeightChart({
         )}
 
         {/* Data points */}
-        {weightGains.map((w, i) => {
-          const x = toX(Math.min(40, pregnancyWeek - (weights.length - 1 - i)));
+        {weightGains.map((w) => {
+          const x = toX(weekForEntry(w.recorded_at));
           const y = toY(w.gain);
           return (
             <Circle

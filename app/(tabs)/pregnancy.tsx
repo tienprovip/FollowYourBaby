@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import Svg, { Circle, Line, Polyline, Polygon, Rect } from 'react-native-svg';
+import Svg, { Line, Polygon, Rect } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { differenceInDays, format, parseISO, startOfDay } from 'date-fns';
+import { differenceInDays, format, isSameDay, parseISO, startOfDay, subDays } from 'date-fns';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { usePregnancyWeights } from '@/hooks/usePregnancyWeights';
 import { useKickCounts } from '@/hooks/useKickCounts';
@@ -32,6 +32,7 @@ interface MetricPillProps {
   label: string;
   value: string;
   accent: string;
+  status?: string;
 }
 
 interface TodoItemProps {
@@ -112,52 +113,53 @@ function ProgressBar({ progress }: { progress: number }) {
   );
 }
 
-function MetricPill({ icon, label, value, accent }: MetricPillProps) {
+function MetricPill({ icon, label, value, status: statusProp }: MetricPillProps) {
+  const displayLabel =
+    icon === 'scale-bathroom'
+      ? 'Cân nặng'
+      : icon === 'heart-pulse'
+        ? 'Huyết áp'
+        : icon === 'water'
+          ? 'Đường huyết'
+          : icon === 'heart'
+            ? 'Nhịp tim'
+            : label;
+  const status = statusProp ?? 'Bình thường';
+  const showDivider = icon !== 'heart';
+
   return (
-    <View className="flex-1">
-      <View className="mb-2 h-9 w-9 items-center justify-center rounded-input bg-white shadow-brand">
-        <MaterialCommunityIcons name={icon} size={18} color={accent} />
-      </View>
-      <Text className="text-[11px] font-semibold text-brand-navy/60">{label}</Text>
-      <Text className="mt-1 text-sm font-bold text-brand-navy">{value}</Text>
+    <View className={`flex-1 px-2 ${showDivider ? 'border-r border-brand-gray' : ''}`}>
+      <Text className="text-xs font-bold text-brand-navy/70">{displayLabel}</Text>
+      <Text className="mt-2 text-base font-bold text-brand-navy">{value}</Text>
+      <Text className="mt-2 text-xs font-semibold text-brand-navy/60">{status}</Text>
     </View>
   );
 }
 
-function MiniLineChart({ color, values }: { color: string; values: number[] }) {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = Math.max(max - min, 1);
-  const points = values
-    .map((value, index) => {
-      const x = 10 + index * (110 / Math.max(values.length - 1, 1));
-      const y = 72 - ((value - min) / range) * 46;
-      return `${x},${y}`;
-    })
-    .join(' ');
-
+function BodyTrackButton({
+  icon,
+  title,
+  body,
+  onPress,
+}: {
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+  title: string;
+  body: string;
+  onPress: () => void;
+}) {
   return (
-    <Svg width="100%" height={90} viewBox="0 0 132 90">
-      {[20, 42, 64].map((y) => (
-        <Line
-          key={y}
-          x1="10"
-          x2="122"
-          y1={y}
-          y2={y}
-          stroke="#ECEAF1"
-          strokeDasharray="3 4"
-          strokeWidth="1"
-        />
-      ))}
-      <Polyline points={points} fill="none" stroke={color} strokeWidth="3" />
-      {points.split(' ').map((point) => {
-        const [cx, cy] = point.split(',');
-        return (
-          <Circle key={point} cx={cx} cy={cy} r="3" fill="#FFFFFF" stroke={color} strokeWidth="2" />
-        );
-      })}
-    </Svg>
+    <TouchableOpacity
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      className="flex-1 items-center rounded-card border border-brand-pink-100 bg-brand-pink-50 px-2 py-5"
+    >
+      <View className="mb-3 h-12 w-12 items-center justify-center rounded-input bg-white">
+        <MaterialCommunityIcons name={icon} size={30} color="#9B7AEF" />
+      </View>
+      <Text className="text-center text-sm font-bold text-brand-navy">{title}</Text>
+      <Text className="mt-1 text-center text-xs font-semibold text-brand-navy/60">{body}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -708,17 +710,25 @@ export default function PregnancyTab() {
   const currentWeek = Math.max(0, pregnancy.currentWeek);
   const progress = Math.min(currentWeek / totalPregnancyWeeks, 1);
   const weightKg = latestWeight?.weight_kg;
-  const firstWeight = weights[0]?.weight_kg;
-  const weightDelta = weightKg != null && firstWeight != null ? weightKg - firstWeight : null;
-  const chartValues =
-    weights.length >= 2 ? weights.slice(-5).map((item) => item.weight_kg) : [50, 53, 55, 57, 60];
+  const prePregnancyWeight = (() => {
+    if (!pregnancy.due_date) return null;
+    const d = subDays(parseISO(pregnancy.due_date), 281);
+    return weights.find((w) => isSameDay(parseISO(w.recorded_at), d)) ?? null;
+  })();
+  const weightGainKg =
+    weightKg != null && prePregnancyWeight != null
+      ? parseFloat((weightKg - prePregnancyWeight.weight_kg).toFixed(1))
+      : null;
   const dueDate = pregnancy.due_date
     ? format(parseISO(pregnancy.due_date), 'dd/MM/yyyy')
     : '--/--/----';
   const weekDetail = (() => {
     const today = startOfDay(new Date());
     if (pregnancy.due_date != null) {
-      const daysElapsed = Math.max(0, 280 - differenceInDays(startOfDay(parseISO(pregnancy.due_date)), today));
+      const daysElapsed = Math.max(
+        0,
+        280 - differenceInDays(startOfDay(parseISO(pregnancy.due_date)), today),
+      );
       return `${Math.floor(daysElapsed / 7)} tuần ${daysElapsed % 7} ngày`;
     }
     if (pregnancy.lmp_date != null) {
@@ -812,47 +822,35 @@ export default function PregnancyTab() {
                   label="Cân nặng"
                   value={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
                   accent={PINK}
+                  status={weightGainKg != null ? `Tăng ${weightGainKg} kg` : undefined}
                 />
                 <MetricPill icon="heart-pulse" label="Huyết áp" value="110/70" accent="#6B8BFF" />
                 <MetricPill icon="water" label="Đường huyết" value="4.8 mmol/L" accent="#20B7A8" />
                 <MetricPill icon="heart" label="Nhịp tim" value="78 bpm" accent="#FF6D91" />
               </View>
-              {weightDelta != null && (
-                <Text className="mt-3 text-xs font-semibold text-brand-navy/60">
-                  Cân nặng thay đổi {weightDelta >= 0 ? '+' : ''}
-                  {weightDelta.toFixed(1)} kg từ lần ghi đầu tiên.
-                </Text>
-              )}
             </Card>
 
             <Card className="mb-4" padding="lg">
               <Text className="mb-4 text-base font-bold text-brand-navy">Theo dõi cơ thể mẹ</Text>
-              <View className="flex-row">
-                <View className="flex-1 pr-4">
-                  <Text className="text-xs font-semibold text-brand-navy/60">Cân nặng</Text>
-                  <Text className="text-sm font-bold text-brand-navy">
-                    {weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
-                  </Text>
-                  <MiniLineChart color={PINK} values={chartValues} />
-                  <TouchableOpacity onPress={() => router.push('/(maternal)/weight')}>
-                    <Text className="text-center text-xs font-bold text-[#5A8CFF]">
-                      Xem lịch sử
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View className="w-px bg-brand-gray" />
-                <View className="flex-1 pl-4">
-                  <Text className="text-xs font-semibold text-brand-navy/60">
-                    Chiều cao tử cung
-                  </Text>
-                  <Text className="text-sm font-bold text-brand-navy">24 cm</Text>
-                  <MiniLineChart color="#FF4F7B" values={[20, 24, 29, 33, 40]} />
-                  <TouchableOpacity onPress={() => router.push('/(maternal)/prenatal-visits')}>
-                    <Text className="text-center text-xs font-bold text-[#5A8CFF]">
-                      Xem lịch sử
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+              <View className="flex-row gap-3">
+                <BodyTrackButton
+                  icon="scale-bathroom"
+                  title="Cân nặng"
+                  body="Ghi lại cân nặng"
+                  onPress={() => router.push('/(maternal)/weight')}
+                />
+                <BodyTrackButton
+                  icon="human-male-height"
+                  title="Chiều cao"
+                  body="Ghi lại chiều cao"
+                  onPress={() => router.push('/(maternal)/height')}
+                />
+                <BodyTrackButton
+                  icon="heart-pulse"
+                  title="Dấu hiệu cơ thể"
+                  body="Xem lịch sử"
+                  onPress={() => router.push('/(maternal)/symptoms')}
+                />
               </View>
             </Card>
 

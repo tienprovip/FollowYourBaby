@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { format, parseISO } from 'date-fns';
+import { format, isSameDay, parseISO, subDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useBabyStore } from '@/stores/babyStore';
 import { useBabies } from '@/hooks/useBabies';
@@ -243,6 +243,16 @@ export default function HomeScreen() {
   const greeting = getGreeting();
   const latestGrowth = dashboard.growth.latestLog;
   const latestWeight = dashboard.pregnancyWeights.latestWeight;
+  const allPregnancyWeights = dashboard.pregnancyWeights.weights;
+  const prePregnancyWeight = (() => {
+    if (!pregnancy?.due_date) return null;
+    const d = subDays(parseISO(pregnancy.due_date), 281);
+    return allPregnancyWeights.find((w) => isSameDay(parseISO(w.recorded_at), d)) ?? null;
+  })();
+  const weightGainKg =
+    latestWeight != null && prePregnancyWeight != null
+      ? parseFloat((latestWeight.weight_kg - prePregnancyWeight.weight_kg).toFixed(1))
+      : null;
   const sleepTotalMinutes =
     (dashboard.sleeps.todayNapMinutes ?? 0) + (dashboard.sleeps.todayNightMinutes ?? 0);
   const sleepHours = Math.floor(sleepTotalMinutes / 60);
@@ -524,11 +534,7 @@ export default function HomeScreen() {
               <View className="flex-row gap-3">
                 <MetricPill
                   label="Tăng cân"
-                  value={
-                    latestWeight
-                      ? `+${Math.max(latestWeight.weight_kg - 52, 0).toFixed(1)} kg`
-                      : '+-- kg'
-                  }
+                  value={weightGainKg != null ? `+${weightGainKg} kg` : '+-- kg'}
                   subtitle="bình thường"
                   color="#17A693"
                 />
