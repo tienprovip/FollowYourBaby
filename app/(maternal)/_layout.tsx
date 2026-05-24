@@ -24,6 +24,11 @@ export default function MaternalLayout() {
       }}
     >
       <Stack.Screen name="symptoms" options={{ title: 'Dấu hiệu cơ thể' }} />
+      <Stack.Screen name="kick-counter" options={{ title: 'Đếm thai máy' }} />
+      <Stack.Screen name="weight" options={{ title: 'Cân nặng thai kỳ' }} />
+      <Stack.Screen name="height" options={{ title: 'Chiều cao' }} />
+      <Stack.Screen name="medications" options={{ title: 'Thuốc & Vitamin' }} />
+      <Stack.Screen name="prenatal-visits" options={{ title: 'Lịch khám thai' }} />
     </Stack>
   );
 }

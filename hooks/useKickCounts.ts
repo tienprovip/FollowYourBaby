@@ -97,6 +97,24 @@ export function useKickCounts(pregnancyId: string | null) {
     },
   });
 
+  // Delete a completed session from history
+  const deleteSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const { error } = await supabase
+        .from('kick_counts')
+        .delete()
+        .eq('id', sessionId);
+      if (error) throw error;
+      return sessionId;
+    },
+    onSuccess: (sessionId) => {
+      queryClient.setQueryData<KickRow[]>(
+        [KICKS_KEY, pregnancyId],
+        (prev) => prev?.filter((k) => k.id !== sessionId) ?? [],
+      );
+    },
+  });
+
   // Cancel an in-progress session (deletes the placeholder row)
   const cancelSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
@@ -151,6 +169,8 @@ export function useKickCounts(pregnancyId: string | null) {
     isEnding: endSessionMutation.isPending,
     cancelSession: cancelSessionMutation.mutateAsync,
     isCancelling: cancelSessionMutation.isPending,
+    deleteSession: deleteSessionMutation.mutateAsync,
+    isDeleting: deleteSessionMutation.isPending,
     isSessionLowKick,
   };
 }

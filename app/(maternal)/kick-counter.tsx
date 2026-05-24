@@ -29,9 +29,19 @@ function formatDuration(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function formatSessionLabel(count: number, startedAt: string, endedAt: string | null): string {
+  if (!endedAt) return `${count} cú đạp (đang chạy)`;
+  const durationMs = new Date(endedAt).getTime() - new Date(startedAt).getTime();
+  const totalMinutes = Math.max(0, Math.floor(durationMs / 60000));
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  const durationStr = h > 0 ? `${h} tiếng ${m} phút` : `${m} phút`;
+  return `${count} cú đạp trong ${durationStr}`;
+}
+
 export default function KickCounterScreen() {
   const { pregnancy } = useActivePregnancy();
-  const { sessions, todayKickCount, isLoading, startSession, endSession, cancelSession, isStarting, isEnding, isSessionLowKick } =
+  const { sessions, todayKickCount, isLoading, startSession, endSession, cancelSession, deleteSession, isStarting, isEnding, isSessionLowKick } =
     useKickCounts(pregnancy?.id ?? null);
 
   const activeSession = useMaternalStore((s) => s.activeKickSession);
@@ -116,6 +126,23 @@ export default function KickCounterScreen() {
       },
     ]);
   }, [activeSession, cancelSession]);
+
+  const handleDelete = useCallback((sessionId: string, label: string) => {
+    Alert.alert('Xoá lịch sử', `Xoá phiên "${label}"?`, [
+      { text: 'Không', style: 'cancel' },
+      {
+        text: 'Xoá',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteSession(sessionId);
+          } catch {
+            Alert.alert('Lỗi', 'Không thể xoá phiên. Vui lòng thử lại.');
+          }
+        },
+      },
+    ]);
+  }, [deleteSession]);
 
   const isRunning = activeSession?.isRunning ?? false;
   const currentCount = activeSession?.count ?? 0;
@@ -224,23 +251,30 @@ export default function KickCounterScreen() {
             <Text className="text-brand-navy font-semibold mb-2 self-start">
               Lịch sử gần đây
             </Text>
-            {sessions.slice(0, 5).map((s) => {
+            {sessions.slice(0, 10).map((s) => {
               const lowKick = s.ended_at ? isSessionLowKick(s) : false;
+              const label = formatSessionLabel(s.count, s.started_at, s.ended_at);
               return (
                 <Card key={s.id} padding="sm" className="w-full mb-2">
-                  <View className="flex-row items-center">
+                  <View className="flex-row items-center gap-x-2">
                     <View className="flex-1">
-                      <Text className="text-brand-navy font-semibold">
-                        {s.count} cú đạp
+                      <Text className="text-brand-navy font-semibold text-sm">
+                        {label}
                       </Text>
-                      <Text className="text-brand-navy/60 text-xs">
-                        {format(parseISO(s.started_at), 'HH:mm dd/MM')}
-                        {s.ended_at
-                          ? ` — ${format(parseISO(s.ended_at), 'HH:mm')}`
-                          : ' (đang chạy)'}
+                      <Text className="text-brand-navy/50 text-xs mt-0.5">
+                        {format(parseISO(s.started_at), 'HH:mm, dd/MM/yyyy')}
                       </Text>
                     </View>
                     {lowKick && <RiskBadge risk_level="yellow" />}
+                    {s.ended_at && (
+                      <TouchableOpacity
+                        onPress={() => handleDelete(s.id, label)}
+                        className="p-2"
+                        accessibilityLabel="Xoa ban ghi"
+                      >
+                        <Text className="text-red-400 text-sm">Xoa</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </Card>
               );
