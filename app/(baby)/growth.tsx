@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useBaby } from '@/hooks/useBaby';
@@ -258,6 +259,7 @@ export default function GrowthScreen() {
                     keyboardType="decimal-pad"
                     className="flex-1 border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm"
                     placeholderTextColor="#1F2B5B60"
+                    style={inputStyles.field}
                   />
                   <Text className="text-brand-navy font-medium w-8">kg</Text>
                 </View>
@@ -269,6 +271,7 @@ export default function GrowthScreen() {
                     keyboardType="decimal-pad"
                     className="flex-1 border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm"
                     placeholderTextColor="#1F2B5B60"
+                    style={inputStyles.field}
                   />
                   <Text className="text-brand-navy font-medium w-8">cm</Text>
                 </View>
@@ -280,6 +283,7 @@ export default function GrowthScreen() {
                     keyboardType="decimal-pad"
                     className="flex-1 border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm"
                     placeholderTextColor="#1F2B5B60"
+                    style={inputStyles.field}
                   />
                   <Text className="text-brand-navy font-medium w-8">cm</Text>
                 </View>
@@ -289,6 +293,7 @@ export default function GrowthScreen() {
                   placeholder="Ghi chu (tuy chon)"
                   className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm"
                   placeholderTextColor="#1F2B5B60"
+                  style={inputStyles.field}
                 />
               </View>
               <View className="flex-row gap-x-3">

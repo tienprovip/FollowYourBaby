@@ -22,6 +22,8 @@ export default function MaternalLayout() {
         headerLeft: () => <BackButton />,
         contentStyle: { backgroundColor: '#FFF8FA' },
       }}
-    />
+    >
+      <Stack.Screen name="symptoms" options={{ title: 'Dấu hiệu cơ thể' }} />
+    </Stack>
   );
 }

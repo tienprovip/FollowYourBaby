@@ -3,10 +3,12 @@ import {
   Alert,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { usePrenatalVisits } from '@/hooks/usePrenatalVisits';
@@ -17,7 +19,6 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import type { PrenatalVisitType } from '@/types/database';
-import { TextInput } from 'react-native';
 
 // ---------------------------------------------------------------------------
 // Prenatal Visits Screen
@@ -161,6 +162,7 @@ export default function PrenatalVisitsScreen() {
               placeholder="Tên phòng khám / bệnh viện"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy bg-white text-sm mb-3"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
 
             {/* Notes */}
@@ -173,7 +175,7 @@ export default function PrenatalVisitsScreen() {
               numberOfLines={3}
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy bg-white text-sm mb-3"
               placeholderTextColor="#1F2B5B60"
-              style={{ height: 80, textAlignVertical: 'top' }}
+              style={[inputStyles.multiline, { height: 80 }]}
             />
 
             <View className="flex-row gap-x-3">

@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { usePregnancyMedications } from '@/hooks/usePregnancyMedications';
 import type { MedicationSchedule } from '@/hooks/usePregnancyMedications';
@@ -189,6 +190,7 @@ export default function MedicationsScreen() {
               placeholder="Axit folic, Sắt, Canxi..."
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy bg-white text-sm mb-3"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
 
             <Text className="text-brand-navy/70 text-xs mb-1">Liều dùng</Text>
@@ -198,6 +200,7 @@ export default function MedicationsScreen() {
               placeholder="Ví dụ: 400mcg, 1 viên"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy bg-white text-sm mb-3"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
 
             <Text className="text-brand-navy/70 text-xs mb-2">Số lần uống / ngày</Text>
@@ -238,6 +241,7 @@ export default function MedicationsScreen() {
                   className="border border-brand-gray rounded-input px-3 py-2 text-brand-navy bg-white text-sm w-20"
                   placeholderTextColor="#1F2B5B60"
                   accessibilityLabel={`Giờ uống lần ${i + 1}`}
+                  style={inputStyles.field}
                 />
               ))}
             </View>

@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useSleepLogs } from '@/hooks/useSleepLogs';
@@ -163,6 +164,7 @@ export default function SleepScreen() {
               placeholder="Ghi chu (tuy chon)"
               className="w-full border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-4"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <View className="flex-row gap-x-3 w-full">
               <Button

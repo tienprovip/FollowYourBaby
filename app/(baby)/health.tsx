@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useBabySymptomLogs, feverRiskLevel } from '@/hooks/useSymptomLogs';
@@ -238,6 +239,7 @@ export default function HealthScreen() {
                 placeholder="37.5"
                 keyboardType="decimal-pad"
                 className="flex-1 border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-xl font-bold text-center"
+                style={inputStyles.field}
                 placeholderTextColor="#1F2B5B40"
               />
               <Text className="text-brand-navy font-bold text-xl">°C</Text>
@@ -384,6 +386,7 @@ export default function HealthScreen() {
               placeholder="Ghi chu them (tuy chon)"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-4"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <View className="flex-row gap-x-3">
               <Button
@@ -448,6 +451,7 @@ export default function HealthScreen() {
               placeholder="Ten thuoc *"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-3"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <TextInput
               value={medDosage}
@@ -455,6 +459,7 @@ export default function HealthScreen() {
               placeholder="Lieu luong (vi du: 5ml / 1 vien)"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-3"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <TextInput
               value={medNote}
@@ -462,6 +467,7 @@ export default function HealthScreen() {
               placeholder="Ghi chu (tuy chon)"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-4"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <View className="flex-row gap-x-3">
               <Button

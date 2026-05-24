@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { format, isSameDay, parseISO, subDays } from 'date-fns';
+import { format, isSameDay, isToday, parseISO, subDays } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useBabyStore } from '@/stores/babyStore';
 import { useBabies } from '@/hooks/useBabies';
@@ -13,6 +13,7 @@ import { NotificationBell } from '@/components/ui';
 import Card from '@/components/ui/Card';
 import { babyAgeLabel } from '@/lib/babyUtils';
 import { calculateDaysUntilDue, calculatePregnancyWeek } from '@/hooks/usePregnancy';
+import { usePregnancyVitals } from '@/hooks/usePregnancyVitals';
 
 type IconFamily = 'ion' | 'material';
 type IonIconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -236,6 +237,9 @@ export default function HomeScreen() {
     pregnancies[0] ??
     null;
 
+  const { vitals: bpVitals } = usePregnancyVitals(resolvedPregnancyId, 'blood_pressure');
+  const { vitals: hrVitals } = usePregnancyVitals(resolvedPregnancyId, 'heart_rate');
+
   const isBabyCase = dashboard.activeContext === 'baby' || Boolean(fallbackBaby);
   const baby = dashboard.baby ?? fallbackBaby;
   const pregnancy = dashboard.pregnancy ?? fallbackPregnancy;
@@ -253,6 +257,31 @@ export default function HomeScreen() {
     latestWeight != null && prePregnancyWeight != null
       ? parseFloat((latestWeight.weight_kg - prePregnancyWeight.weight_kg).toFixed(1))
       : null;
+
+  const latestBP = bpVitals[0] ?? null;
+  const latestHR = hrVitals[0] ?? null;
+
+  const bpDisplayValue = latestBP
+    ? `${latestBP.value1}/${latestBP.value2 ?? '--'}`
+    : '--';
+  const bpDisplayStatus = (() => {
+    if (!latestBP) return '--';
+    const v1 = latestBP.value1;
+    const v2 = latestBP.value2;
+    if (v2 === null || v2 === undefined) return 'Bình thường';
+    if (v1 > 180 || v2 > 120) return 'Rất cao';
+    if (v1 >= 140 || v2 >= 90) return 'Huyết áp cao';
+    if (v1 >= 130 || v2 >= 80) return 'Cao nhẹ';
+    return 'Bình thường';
+  })();
+
+  const hrDisplayValue = latestHR ? `${latestHR.value1} bpm` : '--';
+  const hrDisplayDate = latestHR?.recorded_at
+    ? isToday(parseISO(latestHR.recorded_at))
+      ? 'Hôm nay'
+      : format(parseISO(latestHR.recorded_at), 'dd/MM/yyyy')
+    : '--';
+
   const sleepTotalMinutes =
     (dashboard.sleeps.todayNapMinutes ?? 0) + (dashboard.sleeps.todayNightMinutes ?? 0);
   const sleepHours = Math.floor(sleepTotalMinutes / 60);
@@ -546,14 +575,14 @@ export default function HomeScreen() {
                 />
                 <MetricPill
                   label="Huyết áp"
-                  value="110/70"
-                  subtitle="Bình thường"
+                  value={bpDisplayValue}
+                  subtitle={bpDisplayStatus}
                   color="#7C5CDB"
                 />
                 <MetricPill
                   label="Nhịp tim thai"
-                  value="145 bpm"
-                  subtitle="2 giờ trước"
+                  value={hrDisplayValue}
+                  subtitle={hrDisplayDate}
                   color="#7C5CDB"
                 />
               </View>

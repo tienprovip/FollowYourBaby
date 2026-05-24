@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
@@ -213,6 +214,7 @@ export default function ActivitiesScreen() {
               keyboardType="number-pad"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-3"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <TextInput
               value={note}
@@ -220,6 +222,7 @@ export default function ActivitiesScreen() {
               placeholder="Ghi chu (tuy chon)"
               className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-4"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <View className="flex-row gap-x-3">
               <Button

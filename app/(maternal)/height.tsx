@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { inputStyles } from '@/lib/inputStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import { format, parseISO } from 'date-fns';
@@ -71,7 +72,7 @@ export default function MaternalHeightScreen() {
   async function handleAdd() {
     const height = Number.parseFloat(heightInput.replace(',', '.'));
     if (Number.isNaN(height) || height < 10 || height > 60) {
-      Alert.alert('Chưa đúng', 'Nhập chiều cao tử cung hợp lệ từ 10-60 cm nhé.');
+      Alert.alert('Chưa đúng', 'Nhập chiều dài tử cung hợp lệ từ 10-60 mm nhé.');
       return;
     }
 
@@ -114,7 +115,7 @@ export default function MaternalHeightScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Chiều cao tử cung' }} />
+      <Stack.Screen options={{ title: 'Chiều dài tử cung' }} />
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
         {latestRecord && (
           <Card padding="md" className="mb-4">
@@ -131,19 +132,20 @@ export default function MaternalHeightScreen() {
 
         {showForm ? (
           <Card padding="md" className="mb-4">
-            <Text className="mb-3 font-semibold text-brand-navy">Ghi lại chiều cao tử cung</Text>
+            <Text className="mb-3 font-semibold text-brand-navy">Ghi lại chiều dài tử cung</Text>
             <View className="mb-3 flex-row items-center gap-x-3">
               <TextInput
                 value={heightInput}
                 onChangeText={setHeightInput}
-                placeholder="Chiều cao (cm)"
+                placeholder="Chiều dài (mm)"
                 keyboardType="decimal-pad"
                 className="flex-1 rounded-input border border-brand-gray bg-white px-4 py-3 text-base text-brand-navy"
                 placeholderTextColor="#1F2B5B60"
                 returnKeyType="done"
-                accessibilityLabel="Nhập chiều cao tử cung"
+                accessibilityLabel="Nhập chiều dài tử cung"
+                style={inputStyles.field}
               />
-              <Text className="font-medium text-brand-navy">cm</Text>
+              <Text className="font-medium text-brand-navy">mm</Text>
             </View>
             <DateField
               value={recordedDate}
@@ -158,6 +160,7 @@ export default function MaternalHeightScreen() {
               placeholder="Ghi chú thêm"
               className="mb-3 rounded-input border border-brand-gray bg-white px-4 py-3 text-sm text-brand-navy"
               placeholderTextColor="#1F2B5B60"
+              style={inputStyles.field}
             />
             <View className="flex-row gap-x-3">
               <Button
@@ -182,7 +185,10 @@ export default function MaternalHeightScreen() {
             variant="primary"
             size="lg"
             className="mb-4"
-            onPress={() => { setRecordedDate(new Date()); setShowForm(true); }}
+            onPress={() => {
+              setRecordedDate(new Date());
+              setShowForm(true);
+            }}
           />
         )}
 
@@ -192,7 +198,7 @@ export default function MaternalHeightScreen() {
         ) : records.length === 0 ? (
           <EmptyState
             title="Chưa có số đo"
-            body="Mẹ có thể ghi lại chiều cao tử cung sau mỗi lần đo để theo dõi thay đổi."
+            body="Mẹ có thể ghi lại chiều dài tử cung sau mỗi lần đo để theo dõi thay đổi."
           />
         ) : (
           [...records].reverse().map((record) => (

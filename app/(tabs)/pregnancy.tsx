@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Alert,
   Animated,
@@ -13,9 +14,10 @@ import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Svg, { Line, Polygon, Rect } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { differenceInDays, format, isSameDay, parseISO, startOfDay, subDays } from 'date-fns';
+import { differenceInDays, format, isSameDay, isToday, parseISO, startOfDay, subDays } from 'date-fns';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { usePregnancyWeights } from '@/hooks/usePregnancyWeights';
+import { usePregnancyVitals } from '@/hooks/usePregnancyVitals';
 import { useKickCounts } from '@/hooks/useKickCounts';
 import { usePregnancySymptoms } from '@/hooks/usePregnancySymptoms';
 import { usePrenatalVisits } from '@/hooks/usePrenatalVisits';
@@ -39,6 +41,7 @@ interface TodoItemProps {
   title: string;
   body: string;
   done?: boolean;
+  onPress?: () => void;
 }
 
 type TrackingSection = 'overview' | 'development' | 'knowledge';
@@ -163,9 +166,15 @@ function BodyTrackButton({
   );
 }
 
-function TodoItem({ title, body, done = false }: TodoItemProps) {
+function TodoItem({ title, body, done = false, onPress }: TodoItemProps) {
   return (
-    <View className="mb-4 flex-row items-start">
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: done }}
+      accessibilityLabel={title}
+      className="mb-4 flex-row items-start active:opacity-70"
+    >
       <View
         className={`mr-3 mt-0.5 h-5 w-5 items-center justify-center rounded-full border ${
           done ? 'border-brand-pink-500 bg-brand-pink-500' : 'border-brand-navy/40 bg-white'
@@ -174,10 +183,14 @@ function TodoItem({ title, body, done = false }: TodoItemProps) {
         {done && <Ionicons name="checkmark" size={12} color="#FFFFFF" />}
       </View>
       <View className="flex-1">
-        <Text className="text-sm font-bold text-brand-navy">{title}</Text>
+        <Text
+          className={`text-sm font-bold ${done ? 'text-brand-navy/40 line-through' : 'text-brand-navy'}`}
+        >
+          {title}
+        </Text>
         <Text className="mt-0.5 text-xs font-medium text-brand-navy/60">{body}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -558,6 +571,72 @@ function PregnancyKnowledgeTab({ currentWeek }: { currentWeek: number }) {
   );
 }
 
+function useDailyTodos(pregnancyId: string | null) {
+  const storageKey = `pregnancy_daily_todos_${pregnancyId ?? 'none'}`;
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    AsyncStorage.getItem(storageKey).then((raw) => {
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { date: string; done: string[] };
+      if (parsed.date === todayStr) {
+        setDoneKeys(new Set(parsed.done));
+      }
+    });
+  }, [storageKey, todayStr]);
+
+  const toggle = useCallback(
+    (key: string) => {
+      setDoneKeys((prev) => {
+        const next = new Set(prev);
+        if (next.has(key)) {
+          next.delete(key);
+        } else {
+          next.add(key);
+        }
+        AsyncStorage.setItem(
+          storageKey,
+          JSON.stringify({ date: todayStr, done: Array.from(next) }),
+        );
+        return next;
+      });
+    },
+    [storageKey, todayStr],
+  );
+
+  return { doneKeys, toggle };
+}
+
+function formatVitalDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '--';
+  const d = parseISO(dateStr);
+  return isToday(d) ? 'Hôm nay' : format(d, 'dd/MM/yyyy');
+}
+
+function bpStatusLabel(v1: number, v2: number | null): string {
+  if (v2 === null) return 'Bình thường';
+  if (v1 > 180 || v2 > 120) return 'Rất cao';
+  if (v1 >= 140 || v2 >= 90) return 'Huyết áp cao';
+  if (v1 >= 130 || v2 >= 80) return 'Cao nhẹ';
+  if (v1 >= 120 && v2 < 80) return 'Ngưỡng cao';
+  return 'Bình thường';
+}
+
+function bsStatusLabel(value: number, unit?: string | null): string {
+  const mmol = unit === 'mg/dL' ? value / 18.0182 : value;
+  if (mmol >= 7) return 'Cao — cần khám';
+  if (mmol >= 5.6) return 'Ngưỡng cao';
+  if (mmol < 3.9) return 'Thấp';
+  return 'Bình thường';
+}
+
+function hrStatusLabel(bpm: number): string {
+  if (bpm > 110) return 'Nhanh';
+  if (bpm < 55) return 'Chậm';
+  return 'Bình thường';
+}
+
 function getMotherWeekInfo(week: number) {
   if (week <= 12) {
     return {
@@ -675,6 +754,10 @@ export default function PregnancyTab() {
   const { todayKickCount, isLoading: kicksLoading } = useKickCounts(pregnancyId);
   const { todaySymptoms, isLoading: symptomsLoading } = usePregnancySymptoms(pregnancyId);
   const { nextVisit, pastVisits, isLoading: visitsLoading } = usePrenatalVisits(pregnancyId);
+  const { vitals: bpVitals } = usePregnancyVitals(pregnancyId, 'blood_pressure');
+  const { vitals: bsVitals } = usePregnancyVitals(pregnancyId, 'blood_sugar');
+  const { vitals: hrVitals } = usePregnancyVitals(pregnancyId, 'heart_rate');
+  const { doneKeys, toggle } = useDailyTodos(pregnancyId);
 
   const dataLoading =
     isLoading || weightsLoading || kicksLoading || symptomsLoading || visitsLoading;
@@ -738,6 +821,40 @@ export default function PregnancyTab() {
     return `${currentWeek} tuần`;
   })();
   const daysLeft = pregnancy.daysUntilDue != null ? Math.max(pregnancy.daysUntilDue, 0) : null;
+
+  const latestBP = bpVitals[0] ?? null;
+  const latestBS = bsVitals[0] ?? null;
+  const latestHR = hrVitals[0] ?? null;
+
+  const bpDisplayValue = latestBP
+    ? `${latestBP.value1}/${latestBP.value2 ?? '--'}`
+    : '--';
+  const bpDisplayStatus = latestBP
+    ? bpStatusLabel(latestBP.value1, latestBP.value2 ?? null)
+    : '--';
+
+  const bsDisplayValue = (() => {
+    if (!latestBS) return '--';
+    const mmol = latestBS.unit === 'mg/dL'
+      ? parseFloat((latestBS.value1 / 18.0182).toFixed(1))
+      : latestBS.value1;
+    return `${mmol} mmol/L`;
+  })();
+  const bsDisplayStatus = latestBS ? bsStatusLabel(latestBS.value1, latestBS.unit) : '--';
+
+  const hrDisplayValue = latestHR ? `${latestHR.value1} bpm` : '--';
+  const hrDisplayStatus = latestHR ? hrStatusLabel(latestHR.value1) : '--';
+
+  const vitalDates = [
+    latestWeight?.recorded_at,
+    latestBP?.recorded_at,
+    latestBS?.recorded_at,
+    latestHR?.recorded_at,
+  ].filter((d): d is string => Boolean(d));
+  const overallLatestDate = vitalDates.length > 0
+    ? vitalDates.reduce((a, b) => (new Date(a) > new Date(b) ? a : b))
+    : null;
+  const vitalsUpdateLabel = overallLatestDate ? formatVitalDate(overallLatestDate) : '--';
 
   return (
     <SafeAreaView className="flex-1 bg-brand-peach" edges={['top']}>
@@ -814,19 +931,39 @@ export default function PregnancyTab() {
             <Card className="mb-4" padding="lg">
               <View className="mb-5 flex-row items-center justify-between">
                 <Text className="text-base font-bold text-brand-navy">Chỉ số của mẹ</Text>
-                <Text className="text-xs font-bold text-brand-navy/50">Cập nhật: Hôm nay</Text>
+                <Text className="text-xs font-bold text-brand-navy/50">
+                  Cập nhật: {vitalsUpdateLabel}
+                </Text>
               </View>
               <View className="flex-row">
                 <MetricPill
                   icon="scale-bathroom"
                   label="Cân nặng"
-                  value={weightKg != null ? `${weightKg.toFixed(1)} kg` : '-- kg'}
+                  value={weightKg != null ? `${weightKg.toFixed(1)} kg` : '--'}
                   accent={PINK}
-                  status={weightGainKg != null ? `Tăng ${weightGainKg} kg` : undefined}
+                  status={weightGainKg != null ? `Tăng ${weightGainKg} kg` : '--'}
                 />
-                <MetricPill icon="heart-pulse" label="Huyết áp" value="110/70" accent="#6B8BFF" />
-                <MetricPill icon="water" label="Đường huyết" value="4.8 mmol/L" accent="#20B7A8" />
-                <MetricPill icon="heart" label="Nhịp tim" value="78 bpm" accent="#FF6D91" />
+                <MetricPill
+                  icon="heart-pulse"
+                  label="Huyết áp"
+                  value={bpDisplayValue}
+                  accent="#6B8BFF"
+                  status={bpDisplayStatus}
+                />
+                <MetricPill
+                  icon="water"
+                  label="Đường huyết"
+                  value={bsDisplayValue}
+                  accent="#20B7A8"
+                  status={bsDisplayStatus}
+                />
+                <MetricPill
+                  icon="heart"
+                  label="Nhịp tim"
+                  value={hrDisplayValue}
+                  accent="#FF6D91"
+                  status={hrDisplayStatus}
+                />
               </View>
             </Card>
 
@@ -840,9 +977,9 @@ export default function PregnancyTab() {
                   onPress={() => router.push('/(maternal)/weight')}
                 />
                 <BodyTrackButton
-                  icon="human-male-height"
-                  title="Chiều cao"
-                  body="Ghi lại chiều cao"
+                  icon="tape-measure"
+                  title="Chiều dài"
+                  body="Ghi lại chiều dài tử cung"
                   onPress={() => router.push('/(maternal)/height')}
                 />
                 <BodyTrackButton
@@ -880,16 +1017,34 @@ export default function PregnancyTab() {
             <Card className="mb-4" padding="lg">
               <View className="mb-4 flex-row items-center justify-between">
                 <Text className="text-base font-bold text-brand-navy">Việc cần làm</Text>
-                <Text className="text-xs font-bold text-brand-navy/60">3/5 đã hoàn thành</Text>
+                <Text className="text-xs font-bold text-brand-navy/60">
+                  {doneKeys.size}/5 đã hoàn thành
+                </Text>
               </View>
-              <TodoItem title="Uống vitamin tổng hợp" body="1 viên sau bữa sáng" done />
-              <TodoItem title="Đi bộ 20 phút" body="Vận động nhẹ nhàng tốt cho mẹ và bé" done />
+              <TodoItem
+                title="Uống vitamin tổng hợp"
+                body="1 viên sau bữa sáng"
+                done={doneKeys.has('vitamin')}
+                onPress={() => toggle('vitamin')}
+              />
+              <TodoItem
+                title="Đi bộ 20 phút"
+                body="Vận động nhẹ nhàng tốt cho mẹ và bé"
+                done={doneKeys.has('walk')}
+                onPress={() => toggle('walk')}
+              />
               <TodoItem
                 title="Theo dõi cân nặng"
                 body={weightKg != null ? 'Đã có số đo mới nhất' : 'Cập nhật cân nặng tuần này'}
-                done={weightKg != null}
+                done={doneKeys.has('weight')}
+                onPress={() => toggle('weight')}
               />
-              <TodoItem title="Đọc về dinh dưỡng thai kỳ" body="Tìm hiểu thực phẩm tốt cho bé" />
+              <TodoItem
+                title="Đọc về dinh dưỡng thai kỳ"
+                body="Tìm hiểu thực phẩm tốt cho bé"
+                done={doneKeys.has('reading')}
+                onPress={() => toggle('reading')}
+              />
               <TodoItem
                 title="Khám thai định kỳ"
                 body={
@@ -897,6 +1052,8 @@ export default function PregnancyTab() {
                     ? `Lần khám tiếp theo: ${format(parseISO(nextVisit.scheduled_at), 'dd/MM/yyyy')}`
                     : 'Đặt lịch khám tiếp theo'
                 }
+                done={doneKeys.has('visit')}
+                onPress={() => toggle('visit')}
               />
             </Card>
 

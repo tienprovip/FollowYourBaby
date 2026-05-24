@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useDiaperLogs } from '@/hooks/useDiaperLogs';
@@ -135,6 +136,7 @@ export default function DiaperScreen() {
           placeholder="Ghi chu (tuy chon — ap dung cho lan ghi tiep theo)"
           className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-4 bg-white"
           placeholderTextColor="#1F2B5B60"
+          style={inputStyles.field}
         />
 
         {/* History */}

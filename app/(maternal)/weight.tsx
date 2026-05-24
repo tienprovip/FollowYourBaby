@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { format, isSameDay, parseISO, subDays } from 'date-fns';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { usePregnancyWeights } from '@/hooks/usePregnancyWeights';
@@ -161,6 +162,7 @@ export default function WeightScreen() {
                       placeholderTextColor="#1F2B5B60"
                       returnKeyType="done"
                       accessibilityLabel="Nhập cân nặng trước mang thai"
+                      style={inputStyles.field}
                     />
                     <Text className="text-brand-navy font-medium">kg</Text>
                   </View>
@@ -239,6 +241,7 @@ export default function WeightScreen() {
                   placeholderTextColor="#1F2B5B60"
                   returnKeyType="done"
                   accessibilityLabel="Nhập cân nặng"
+                  style={inputStyles.field}
                 />
                 <Text className="text-brand-navy font-medium">kg</Text>
               </View>
@@ -255,6 +258,7 @@ export default function WeightScreen() {
                 placeholder="Ghi chú (tuỳ chọn)"
                 className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy bg-white text-sm mb-3"
                 placeholderTextColor="#1F2B5B60"
+                style={inputStyles.field}
               />
               <View className="flex-row gap-x-3">
                 <Button

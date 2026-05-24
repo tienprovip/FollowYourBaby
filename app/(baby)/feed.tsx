@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import { inputStyles } from '@/lib/inputStyles';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useFeedLogs } from '@/hooks/useFeedLogs';
@@ -204,6 +205,7 @@ export default function FeedScreen() {
             placeholder="Ghi chu (tuy chon)"
             className="w-full border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mt-4 mb-4"
             placeholderTextColor="#1F2B5B60"
+            style={inputStyles.field}
           />
           <Button
             label="Ket thuc bu"
@@ -308,6 +310,7 @@ export default function FeedScreen() {
           keyboardType="number-pad"
           className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-3"
           placeholderTextColor="#1F2B5B60"
+          style={inputStyles.field}
         />
         <TextInput
           value={note}
@@ -315,6 +318,7 @@ export default function FeedScreen() {
           placeholder="Ghi chu (tuy chon)"
           className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-4"
           placeholderTextColor="#1F2B5B60"
+          style={inputStyles.field}
         />
         <View className="flex-row gap-x-3">
           <Button
@@ -391,6 +395,7 @@ export default function FeedScreen() {
           placeholder="Them mon an khac hoac ghi chu..."
           className="border border-brand-gray rounded-input px-4 py-3 text-brand-navy text-sm mb-4"
           placeholderTextColor="#1F2B5B60"
+          style={inputStyles.field}
           multiline
           numberOfLines={2}
         />

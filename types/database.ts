@@ -36,6 +36,7 @@ export type NotificationKind = 'feed' | 'sleep' | 'medication' | 'visit' | 'insi
 export type NotificationStatus = 'pending' | 'sent' | 'failed' | 'cancelled';
 export type SubscriptionPlan = 'free' | 'premium' | 'family';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'trialing' | 'past_due';
+export type VitalKind = 'blood_pressure' | 'blood_sugar' | 'heart_rate';
 
 // ---------------------------------------------------------------------------
 // Database interface
@@ -307,6 +308,62 @@ export interface Database {
       };
 
       // -----------------------------------------------------------------------
+      // -----------------------------------------------------------------------
+      // pregnancy_vitals
+      // -----------------------------------------------------------------------
+      pregnancy_vitals: {
+        Row: {
+          id: string;
+          pregnancy_id: string;
+          owner_id: string;
+          kind: VitalKind;
+          value1: number;
+          value2: number | null;
+          unit: string;
+          recorded_at: string;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          pregnancy_id: string;
+          owner_id: string;
+          kind: VitalKind;
+          value1: number;
+          value2?: number | null;
+          unit: string;
+          recorded_at?: string;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          pregnancy_id?: string;
+          owner_id?: string;
+          kind?: VitalKind;
+          value1?: number;
+          value2?: number | null;
+          unit?: string;
+          recorded_at?: string;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pregnancy_vitals_pregnancy_id_fkey';
+            columns: ['pregnancy_id'];
+            referencedRelation: 'pregnancies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pregnancy_vitals_owner_id_fkey';
+            columns: ['owner_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+
       // kick_counts
       // -----------------------------------------------------------------------
       kick_counts: {
