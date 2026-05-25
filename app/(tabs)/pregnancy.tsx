@@ -16,6 +16,7 @@ import Svg, { Line, Polygon, Rect } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { differenceInDays, format, isSameDay, isToday, parseISO, startOfDay, subDays } from 'date-fns';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
+import { FETAL_DEVELOPMENT, type FetalDayEntry } from '@/lib/content/fetalDevelopment';
 import { usePregnancyWeights } from '@/hooks/usePregnancyWeights';
 import { usePregnancyVitals } from '@/hooks/usePregnancyVitals';
 import { useKickCounts } from '@/hooks/useKickCounts';
@@ -370,10 +371,24 @@ function WeekSelector({
   selectedWeek: number;
   onSelectWeek: (week: number) => void;
 }) {
+  const scrollRef = useRef<ScrollView>(null);
+  const itemOffsets = useRef<number[]>([]);
+  const scrollOnMount = useRef(true);
   const weeks = Array.from({ length: 42 }, (_, index) => index + 1);
+
+  useEffect(() => {
+    if (!scrollOnMount.current || selectedWeek <= 0) return;
+    scrollOnMount.current = false;
+    const prevWeek = Math.max(1, selectedWeek - 1);
+    setTimeout(() => {
+      const offset = itemOffsets.current[prevWeek - 1] ?? 0;
+      scrollRef.current?.scrollTo({ x: Math.max(0, offset), animated: false });
+    }, 0);
+  }, [selectedWeek]);
 
   return (
     <ScrollView
+      ref={scrollRef}
       horizontal
       showsHorizontalScrollIndicator={false}
       className="mb-4"
@@ -384,6 +399,9 @@ function WeekSelector({
         return (
           <Pressable
             key={week}
+            onLayout={(e) => {
+              itemOffsets.current[week - 1] = e.nativeEvent.layout.x;
+            }}
             onPress={() => onSelectWeek(week)}
             accessibilityRole="button"
             accessibilityState={{ selected: isActive }}
@@ -400,16 +418,27 @@ function WeekSelector({
   );
 }
 
-function DevelopmentBullet({ title, body }: { title: string; body: string }) {
+function DevelopmentDayRow({ entry, isToday }: { entry: FetalDayEntry; isToday: boolean }) {
   return (
-    <View className="flex-row items-start py-3">
-      <View className="mr-3 mt-0.5 h-5 w-5 items-center justify-center rounded-full bg-brand-pink-500">
-        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+    <View
+      className={`flex-row items-start border-b border-brand-gray py-3 last:border-b-0 ${
+        isToday ? '-mx-4 rounded-input bg-brand-pink-50 px-4' : ''
+      }`}
+    >
+      <View
+        className={`mr-3 mt-0.5 min-w-[52px] items-center justify-center rounded-full px-2 py-1 ${
+          isToday ? 'bg-brand-pink-500' : 'bg-brand-lavender-100'
+        }`}
+      >
+        <Text
+          className={`text-[10px] font-bold ${isToday ? 'text-white' : 'text-brand-navy/60'}`}
+        >
+          {isToday ? 'Hôm nay' : `Ngày ${entry.dayInWeek + 1}`}
+        </Text>
       </View>
-      <View className="flex-1">
-        <Text className="text-sm font-bold text-brand-navy">{title}</Text>
-        <Text className="mt-1 text-xs font-semibold leading-5 text-brand-navy/60">{body}</Text>
-      </View>
+      <Text className="flex-1 text-xs font-semibold leading-5 text-brand-navy/70">
+        {entry.content}
+      </Text>
     </View>
   );
 }
@@ -417,17 +446,24 @@ function DevelopmentBullet({ title, body }: { title: string; body: string }) {
 function PregnancyDevelopmentTab({
   currentWeek,
   weekDetail,
+  currentDayInWeek,
+  selectedWeek,
+  onSelectWeek,
 }: {
   currentWeek: number;
   weekDetail: string;
+  currentDayInWeek: number;
+  selectedWeek: number;
+  onSelectWeek: (week: number) => void;
 }) {
-  const [selectedWeek, setSelectedWeek] = useState(Math.max(1, currentWeek || 1));
   const fetalSize = estimateFetalSize(selectedWeek);
   const selectedWeekDetail = selectedWeek === currentWeek ? weekDetail : `${selectedWeek} tuần`;
+  const weekData = FETAL_DEVELOPMENT[selectedWeek];
+  const isViewingCurrentWeek = selectedWeek === currentWeek;
 
   return (
     <View>
-      <WeekSelector selectedWeek={selectedWeek} onSelectWeek={setSelectedWeek} />
+      <WeekSelector selectedWeek={selectedWeek} onSelectWeek={onSelectWeek} />
       <View className="px-5">
         <Text className="mb-3 text-sm font-bold text-brand-navy">Thai nhi của mẹ</Text>
         <Card className="mb-5" padding="lg">
@@ -440,7 +476,7 @@ function PregnancyDevelopmentTab({
               <Text className="mt-3 text-xs font-bold text-brand-navy/60">
                 Kích thước tương đương
               </Text>
-              <Text className="mt-1 text-base font-bold text-brand-navy">Quả đu đủ</Text>
+              <Text className="mt-1 text-base font-bold text-brand-navy">{fetalSize.fruit}</Text>
             </View>
           </View>
           <View className="mt-6 flex-row border-t border-brand-gray pt-4">
@@ -456,24 +492,21 @@ function PregnancyDevelopmentTab({
           </View>
         </Card>
 
-        <Text className="mb-2 text-lg font-bold text-brand-navy">Sự phát triển của thai nhi</Text>
-        <Text className="mb-4 text-sm font-semibold leading-6 text-brand-navy/70">
-          Bé đang phát triển rất nhanh! Các cơ quan quan trọng đang hoàn thiện dần. Bé có thể nghe
-          được âm thanh và cảm nhận ánh sáng mẹ nhé.
+        <Text className="mb-3 text-lg font-bold text-brand-navy">
+          {weekData ? `${weekData.emoji} ${weekData.title}` : `Tuần ${selectedWeek}`}
         </Text>
         <Card padding="lg">
-          <DevelopmentBullet
-            title="Hệ thần kinh tiếp tục phát triển"
-            body="Não bộ phát triển nhanh, các kết nối thần kinh ngày càng hoàn thiện."
-          />
-          <DevelopmentBullet
-            title="Bé nghe được âm thanh"
-            body="Bé có thể nghe thấy giọng nói, nhạc và âm thanh từ bên ngoài."
-          />
-          <DevelopmentBullet
-            title="Da bé bắt đầu có lớp bảo vệ"
-            body="Lớp màng bảo vệ hình thành, giúp bảo vệ làn da non nớt của bé."
-          />
+          {weekData ? (
+            weekData.days.map((entry) => (
+              <DevelopmentDayRow
+                key={entry.key}
+                entry={entry}
+                isToday={isViewingCurrentWeek && entry.dayInWeek === currentDayInWeek}
+              />
+            ))
+          ) : (
+            <Text className="text-sm text-brand-navy/50">Chưa có dữ liệu cho tuần này.</Text>
+          )}
         </Card>
       </View>
     </View>
@@ -681,13 +714,18 @@ function getMotherWeekInfo(week: number) {
   };
 }
 
-function PregnancyKnowledgeTabWithWeeks({ currentWeek }: { currentWeek: number }) {
-  const [selectedWeek, setSelectedWeek] = useState(Math.max(1, currentWeek || 1));
+function PregnancyKnowledgeTabWithWeeks({
+  selectedWeek,
+  onSelectWeek,
+}: {
+  selectedWeek: number;
+  onSelectWeek: (week: number) => void;
+}) {
   const weekInfo = getMotherWeekInfo(selectedWeek);
 
   return (
     <View>
-      <WeekSelector selectedWeek={selectedWeek} onSelectWeek={setSelectedWeek} />
+      <WeekSelector selectedWeek={selectedWeek} onSelectWeek={onSelectWeek} />
       <View className="px-5">
         <Text className="mb-4 text-base font-bold text-brand-navy">
           Mẹ cần biết trong tuần {selectedWeek}
@@ -748,6 +786,7 @@ function PregnancyKnowledgeTabWithWeeks({ currentWeek }: { currentWeek: number }
 
 export default function PregnancyTab() {
   const [activeSection, setActiveSection] = useState<TrackingSection>('overview');
+  const [selectedWeek, setSelectedWeek] = useState(0);
   const { pregnancy, isLoading, hasActivePregnancy } = useActivePregnancy();
   const pregnancyId = pregnancy?.id ?? null;
   const { weights, latestWeight, isLoading: weightsLoading } = usePregnancyWeights(pregnancyId);
@@ -791,6 +830,7 @@ export default function PregnancyTab() {
 
   const totalPregnancyWeeks = 40;
   const currentWeek = Math.max(0, pregnancy.currentWeek);
+  const effectiveWeek = selectedWeek || Math.max(1, currentWeek);
   const progress = Math.min(currentWeek / totalPregnancyWeeks, 1);
   const weightKg = latestWeight?.weight_kg;
   const prePregnancyWeight = (() => {
@@ -819,6 +859,21 @@ export default function PregnancyTab() {
       return `${Math.floor(days / 7)} tuần ${days % 7} ngày`;
     }
     return `${currentWeek} tuần`;
+  })();
+  const currentDayInWeek = (() => {
+    const today = startOfDay(new Date());
+    if (pregnancy.due_date != null) {
+      const daysElapsed = Math.max(
+        0,
+        280 - differenceInDays(startOfDay(parseISO(pregnancy.due_date)), today),
+      );
+      return daysElapsed % 7;
+    }
+    if (pregnancy.lmp_date != null) {
+      const days = Math.max(0, differenceInDays(today, startOfDay(parseISO(pregnancy.lmp_date))));
+      return days % 7;
+    }
+    return 0;
   })();
   const daysLeft = pregnancy.daysUntilDue != null ? Math.max(pregnancy.daysUntilDue, 0) : null;
 
@@ -1120,9 +1175,9 @@ export default function PregnancyTab() {
             </Card>
           </View>
         ) : activeSection === 'development' ? (
-          <PregnancyDevelopmentTab currentWeek={currentWeek} weekDetail={weekDetail} />
+          <PregnancyDevelopmentTab currentWeek={currentWeek} weekDetail={weekDetail} currentDayInWeek={currentDayInWeek} selectedWeek={effectiveWeek} onSelectWeek={setSelectedWeek} />
         ) : (
-          <PregnancyKnowledgeTabWithWeeks currentWeek={currentWeek} />
+          <PregnancyKnowledgeTabWithWeeks selectedWeek={effectiveWeek} onSelectWeek={setSelectedWeek} />
         )}
       </ScrollView>
     </SafeAreaView>
