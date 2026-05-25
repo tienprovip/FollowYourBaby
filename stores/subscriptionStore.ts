@@ -1,5 +1,7 @@
-import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+
+import { supabase } from '@/lib/supabase';
 
 // ---------------------------------------------------------------------------
 // Subscription tier definitions
@@ -7,12 +9,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type SubscriptionTier = 'free' | 'premium' | 'family_premium';
 
-// AsyncStorage keys
 const SUBSCRIPTION_KEY = 'subscription_data';
-const AI_USAGE_KEY = 'ai_usage_today';
 
 export interface AIUsageToday {
-  date: string;   // YYYY-MM-DD in local time
+  date: string;   // YYYY-MM-DD
   count: number;
 }
 
@@ -24,17 +24,15 @@ export interface SubscriptionData {
 }
 
 interface SubscriptionState extends SubscriptionData {
-  // --- Actions ---
   setSubscription: (tier: SubscriptionTier, expiresAt: string | null) => void;
   setTrial: (daysLeft: number) => void;
   reset: () => void;
-  /** Hydrate store from AsyncStorage (called on app init alongside authStore). */
   hydrate: () => Promise<void>;
 
-  // AI message quota (free tier only — tracked locally)
+  // AI message quota — tracked in Supabase (ai_daily_usage table)
   aiUsage: AIUsageToday | null;
+  fetchAIUsage: () => Promise<void>;
   incrementAIUsage: () => Promise<void>;
-  resetAIUsageIfNewDay: () => Promise<void>;
 }
 
 const INITIAL_SUBSCRIPTION: SubscriptionData = {
@@ -44,12 +42,7 @@ const INITIAL_SUBSCRIPTION: SubscriptionData = {
   trialDaysLeft: null,
 };
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function todayString(): string {
-  // Returns YYYY-MM-DD in local timezone
   const d = new Date();
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -66,18 +59,13 @@ function isExpired(expiresAt: string | null): boolean {
 // Store
 // ---------------------------------------------------------------------------
 
-export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
+export const useSubscriptionStore = create<SubscriptionState>((set) => ({
   ...INITIAL_SUBSCRIPTION,
   aiUsage: null,
 
   setSubscription: (tier, expiresAt) => {
     const isActive = tier === 'free' ? true : !isExpired(expiresAt);
-    const data: SubscriptionData = {
-      tier,
-      expiresAt,
-      isActive,
-      trialDaysLeft: null,
-    };
+    const data: SubscriptionData = { tier, expiresAt, isActive, trialDaysLeft: null };
     set(data);
     AsyncStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(data)).catch(() => null);
   },
@@ -94,62 +82,69 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   },
 
   reset: () => {
-    set(INITIAL_SUBSCRIPTION);
+    set({ ...INITIAL_SUBSCRIPTION, aiUsage: null });
     AsyncStorage.removeItem(SUBSCRIPTION_KEY).catch(() => null);
   },
 
   hydrate: async () => {
     try {
-      const [storedSub, storedUsage] = await Promise.all([
-        AsyncStorage.getItem(SUBSCRIPTION_KEY),
-        AsyncStorage.getItem(AI_USAGE_KEY),
-      ]);
-
+      const storedSub = await AsyncStorage.getItem(SUBSCRIPTION_KEY);
       if (storedSub) {
         const parsed = JSON.parse(storedSub) as SubscriptionData;
-        // Recheck expiry on hydration
-        const isActive =
-          parsed.tier === 'free' ? true : !isExpired(parsed.expiresAt);
+        const isActive = parsed.tier === 'free' ? true : !isExpired(parsed.expiresAt);
         set({ ...parsed, isActive });
-      }
-
-      if (storedUsage) {
-        const parsed = JSON.parse(storedUsage) as AIUsageToday;
-        // If stored date is not today, reset count
-        if (parsed.date !== todayString()) {
-          const reset: AIUsageToday = { date: todayString(), count: 0 };
-          set({ aiUsage: reset });
-          await AsyncStorage.setItem(AI_USAGE_KEY, JSON.stringify(reset));
-        } else {
-          set({ aiUsage: parsed });
-        }
-      } else {
-        set({ aiUsage: { date: todayString(), count: 0 } });
       }
     } catch {
       // Fail silently — default free tier is safe fallback
     }
   },
 
-  incrementAIUsage: async () => {
-    await get().resetAIUsageIfNewDay();
-    const today = todayString();
-    const current = get().aiUsage ?? { date: today, count: 0 };
-    const updated: AIUsageToday = {
-      date: today,
-      count: current.count + 1,
-    };
-    set({ aiUsage: updated });
-    await AsyncStorage.setItem(AI_USAGE_KEY, JSON.stringify(updated)).catch(() => null);
+  fetchAIUsage: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('ai_daily_usage')
+        .select('count')
+        .eq('user_id', user.id)
+        .eq('usage_date', todayString())
+        .maybeSingle();
+
+      if (error) return;
+
+      set({ aiUsage: { date: todayString(), count: data?.count ?? 0 } });
+    } catch {
+      // Fallback to 0 — safe default
+      set({ aiUsage: { date: todayString(), count: 0 } });
+    }
   },
 
-  resetAIUsageIfNewDay: async () => {
-    const today = todayString();
-    const current = get().aiUsage;
-    if (!current || current.date !== today) {
-      const reset: AIUsageToday = { date: today, count: 0 };
-      set({ aiUsage: reset });
-      await AsyncStorage.setItem(AI_USAGE_KEY, JSON.stringify(reset)).catch(() => null);
+  incrementAIUsage: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .rpc('increment_ai_usage', { p_user_id: user.id });
+
+      if (!error && typeof data === 'number') {
+        set({ aiUsage: { date: todayString(), count: data } });
+      } else {
+        set((state) => ({
+          aiUsage: {
+            date: todayString(),
+            count: (state.aiUsage?.count ?? 0) + 1,
+          },
+        }));
+      }
+    } catch {
+      set((state) => ({
+        aiUsage: {
+          date: todayString(),
+          count: (state.aiUsage?.count ?? 0) + 1,
+        },
+      }));
     }
   },
 }));

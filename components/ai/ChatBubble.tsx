@@ -37,10 +37,14 @@ function ChatBubble({ message, isUser }: ChatBubbleProps) {
         )}
         <Text className="text-brand-navy text-sm leading-6">{message.content}</Text>
         {message.risk_level === 'yellow' && (
-          <Text className="text-amber-600 text-xs mt-2 font-medium">Theo dõi thêm tình trạng này.</Text>
+          <Text className="text-amber-600 text-xs mt-2 font-medium">
+            Theo dõi thêm tình trạng này.
+          </Text>
         )}
         {message.risk_level === 'red' && (
-          <Text className="text-red-600 text-xs mt-2 font-medium">Nên liên hệ bác sĩ sớm.</Text>
+          <Text className="text-red-600 text-xs mt-2 font-medium">
+            Nên liên hệ bác sĩ sớm.
+          </Text>
         )}
       </View>
       <Text className="text-xs text-gray-400 mt-1 ml-1">{formatTime(message.created_at)}</Text>

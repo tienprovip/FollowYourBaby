@@ -36,7 +36,7 @@ function NavigationGuard() {
   const { introSeen, introReady, setIntroSeen, setIntroReady } = useUiStore();
   const { hydrate } = useBabyStore();
   const { hydrate: hydrateTracking } = useBabyTrackingStore();
-  const { hydrate: hydrateSubscription } = useSubscriptionStore();
+  const { hydrate: hydrateSubscription, fetchAIUsage } = useSubscriptionStore();
   const notificationResponseRef = useRef<ReturnType<typeof Notifications.addNotificationResponseReceivedListener> | null>(null);
 
   // Hydrate intro state from SecureStore once on mount.
@@ -48,6 +48,7 @@ function NavigationGuard() {
     hydrate();
     hydrateTracking();
     hydrateSubscription();
+    fetchAIUsage();
     setupAndroidNotificationChannel().catch(() => null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

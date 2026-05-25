@@ -11,9 +11,9 @@ export interface RiskBadgeProps {
 }
 
 const LABELS: Record<RiskLevel, string> = {
-  green: 'An toàn',
-  yellow: 'Theo dõi',
-  red: 'Cần khám',
+  green: 'Bình thường',
+  yellow: 'Cần theo dõi',
+  red: 'Cần khám bác sĩ',
 };
 
 /** Specialized badge for AI-assessed risk levels. */

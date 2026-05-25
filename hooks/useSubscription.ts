@@ -4,7 +4,7 @@ import { useSubscriptionStore } from '@/stores/subscriptionStore';
 // Free tier limits
 // ---------------------------------------------------------------------------
 
-export const FREE_AI_MESSAGES_PER_DAY = 5;
+export const FREE_AI_MESSAGES_PER_DAY = 10;
 export const FREE_MAX_BABIES = 1;
 export const PREMIUM_MAX_BABIES = 3;
 

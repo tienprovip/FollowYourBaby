@@ -17,9 +17,11 @@ function AIDisclaimer({ className }: AIDisclaimerProps) {
       accessibilityRole="text"
       accessibilityLabel="Cảnh báo AI: không thay thế bác sĩ"
     >
-      <Text className="text-brand-lavender mr-2 text-sm">ℹ</Text>
+      <View className="w-5 h-5 rounded-full bg-brand-lavender-100 items-center justify-center mr-2 mt-0.5">
+        <Text className="text-brand-lavender-700 text-xs font-bold">i</Text>
+      </View>
       <Text className="flex-1 text-brand-lavender-700 text-xs leading-5">
-        AI hỗ trợ — không thay thế bác sĩ. Hãy hỏi chuyên gia khi cần.
+        Thông tin từ AI, không thay thế ý kiến bác sĩ. Hãy hỏi chuyên gia khi cần.
       </Text>
     </View>
   );
