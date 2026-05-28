@@ -266,7 +266,7 @@ export default function KickCounterScreen() {
                       </Text>
                     </View>
                     {lowKick && <RiskBadge risk_level="yellow" />}
-                    {s.ended_at && (
+                    {(s.ended_at || s.id !== activeSession?.sessionId) && (
                       <TouchableOpacity
                         onPress={() => handleDelete(s.id, label)}
                         className="p-2"

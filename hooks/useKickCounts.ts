@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
@@ -36,6 +37,31 @@ export function useKickCounts(pregnancyId: string | null) {
       return data as KickRow[];
     },
   });
+
+  // Auto-cleanup stale sessions: started > 4 hours ago, still has ended_at = null,
+  // and is not the current active session in Zustand.
+  const activeSessionId = useMaternalStore((s) => s.activeKickSession?.sessionId);
+  useEffect(() => {
+    const rows = listQuery.data;
+    if (!rows) return;
+    const fourHoursAgo = Date.now() - 4 * 60 * 60 * 1000;
+    const stale = rows.filter(
+      (r) =>
+        !r.ended_at &&
+        r.id !== activeSessionId &&
+        new Date(r.started_at).getTime() < fourHoursAgo,
+    );
+    if (stale.length === 0) return;
+
+    Promise.all(
+      stale.map((r) => supabase.from('kick_counts').delete().eq('id', r.id)),
+    ).then(() => {
+      queryClient.setQueryData<KickRow[]>(
+        [KICKS_KEY, pregnancyId],
+        (prev) => prev?.filter((k) => !stale.some((s) => s.id === k.id)) ?? [],
+      );
+    });
+  }, [listQuery.data, activeSessionId, pregnancyId, queryClient]);
 
   // Start a new session — inserts a row with count=0, ended_at=null
   const startSessionMutation = useMutation({
