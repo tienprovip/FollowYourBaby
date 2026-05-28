@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { differenceInDays, format, isSameDay, isToday, parseISO, startOfDay, subDays } from 'date-fns';
 import { useActivePregnancy } from '@/hooks/usePregnancy';
 import { FETAL_DEVELOPMENT, type FetalDayEntry } from '@/lib/content/fetalDevelopment';
+import { MOTHER_CHANGES, type MotherDayEntry } from '@/lib/content/motherChanges';
 import { usePregnancyWeights } from '@/hooks/usePregnancyWeights';
 import { usePregnancyVitals } from '@/hooks/usePregnancyVitals';
 import { useKickCounts } from '@/hooks/useKickCounts';
@@ -312,56 +313,62 @@ function TrackingTabs({
   );
 }
 
-function estimateFetalSize(week: number) {
-  const length = Math.max(0.4, week * 1.25);
-  const weight =
-    week < 8
-      ? week
-      : week < 20
-        ? week * week * 1.1
-        : Math.min(3600, Math.round((week - 20) * 150 + 300));
+interface FetalSizeEntry {
+  lengthLabel: string;
+  length: string;
+  weight: string;
+  fruit: string;
+}
 
-  if (week <= 8) {
-    return {
-      fruit: 'Hạt đậu nhỏ',
-      length: `${length.toFixed(1)} cm`,
-      weight: `${Math.round(weight)} g`,
-    };
-  }
-  if (week <= 13) {
-    return {
-      fruit: 'Quả chanh',
-      length: `${length.toFixed(1)} cm`,
-      weight: `${Math.round(weight)} g`,
-    };
-  }
-  if (week <= 20) {
-    return {
-      fruit: 'Quả bơ',
-      length: `${length.toFixed(1)} cm`,
-      weight: `${Math.round(weight)} g`,
-    };
-  }
-  if (week <= 28) {
-    return {
-      fruit: 'Quả đu đủ',
-      length: `${length.toFixed(1)} cm`,
-      weight: `${Math.round(weight)} g`,
-    };
-  }
-  if (week <= 36) {
-    return {
-      fruit: 'Quả bí nhỏ',
-      length: `${length.toFixed(1)} cm`,
-      weight: `${Math.round(weight)} g`,
-    };
-  }
+const FETAL_SIZE_TABLE: Record<number, FetalSizeEntry> = {
+  4:  { lengthLabel: 'CRL', length: '0.4 cm',  weight: '< 1 g',   fruit: 'Hạt vừng' },
+  5:  { lengthLabel: 'CRL', length: '0.6 cm',  weight: '< 1 g',   fruit: 'Hạt vừng' },
+  6:  { lengthLabel: 'CRL', length: '0.8 cm',  weight: '1 g',     fruit: 'Hạt đậu' },
+  7:  { lengthLabel: 'CRL', length: '1.2 cm',  weight: '1 g',     fruit: 'Quả việt quất' },
+  8:  { lengthLabel: 'CRL', length: '1.6 cm',  weight: '1 g',     fruit: 'Quả mâm xôi' },
+  9:  { lengthLabel: 'CRL', length: '2.3 cm',  weight: '2 g',     fruit: 'Quả nho' },
+  10: { lengthLabel: 'CRL', length: '3.1 cm',  weight: '4 g',     fruit: 'Quả quất' },
+  11: { lengthLabel: 'CRL', length: '4.1 cm',  weight: '7 g',     fruit: 'Quả sung' },
+  12: { lengthLabel: 'CRL', length: '5.4 cm',  weight: '14 g',    fruit: 'Quả chanh' },
+  13: { lengthLabel: 'CRL', length: '7.4 cm',  weight: '23 g',    fruit: 'Quả đào' },
+  14: { lengthLabel: 'CRL', length: '8.7 cm',  weight: '43 g',    fruit: 'Quả chanh vàng' },
+  15: { lengthLabel: 'Chiều dài', length: '10.1 cm', weight: '70 g',    fruit: 'Quả táo' },
+  16: { lengthLabel: 'Chiều dài', length: '11.6 cm', weight: '100 g',   fruit: 'Quả bơ' },
+  17: { lengthLabel: 'Chiều dài', length: '13.0 cm', weight: '140 g',   fruit: 'Củ cải' },
+  18: { lengthLabel: 'Chiều dài', length: '14.2 cm', weight: '190 g',   fruit: 'Quả ớt chuông' },
+  19: { lengthLabel: 'Chiều dài', length: '15.3 cm', weight: '240 g',   fruit: 'Quả cà chua' },
+  20: { lengthLabel: 'Chiều dài', length: '25.6 cm', weight: '300 g',   fruit: 'Quả chuối' },
+  21: { lengthLabel: 'Chiều dài', length: '26.7 cm', weight: '360 g',   fruit: 'Củ cà rốt' },
+  22: { lengthLabel: 'Chiều dài', length: '27.8 cm', weight: '430 g',   fruit: 'Quả đu đủ nhỏ' },
+  23: { lengthLabel: 'Chiều dài', length: '28.9 cm', weight: '501 g',   fruit: 'Quả xoài' },
+  24: { lengthLabel: 'Chiều dài', length: '30.0 cm', weight: '600 g',   fruit: 'Trái bắp' },
+  25: { lengthLabel: 'Chiều dài', length: '34.6 cm', weight: '660 g',   fruit: 'Quả đu đủ' },
+  26: { lengthLabel: 'Chiều dài', length: '35.6 cm', weight: '760 g',   fruit: 'Củ hành tây' },
+  27: { lengthLabel: 'Chiều dài', length: '36.6 cm', weight: '875 g',   fruit: 'Quả cà tím' },
+  28: { lengthLabel: 'Chiều dài', length: '37.6 cm', weight: '1005 g',  fruit: 'Quả cà tím lớn' },
+  29: { lengthLabel: 'Chiều dài', length: '38.6 cm', weight: '1153 g',  fruit: 'Quả bí nhỏ' },
+  30: { lengthLabel: 'Chiều dài', length: '39.9 cm', weight: '1319 g',  fruit: 'Bắp cải' },
+  31: { lengthLabel: 'Chiều dài', length: '41.1 cm', weight: '1502 g',  fruit: 'Quả dừa' },
+  32: { lengthLabel: 'Chiều dài', length: '42.4 cm', weight: '1702 g',  fruit: 'Quả bí ngô' },
+  33: { lengthLabel: 'Chiều dài', length: '43.7 cm', weight: '1918 g',  fruit: 'Quả dứa' },
+  34: { lengthLabel: 'Chiều dài', length: '45.0 cm', weight: '2146 g',  fruit: 'Quả dứa' },
+  35: { lengthLabel: 'Chiều dài', length: '46.2 cm', weight: '2383 g',  fruit: 'Quả dưa gang' },
+  36: { lengthLabel: 'Chiều dài', length: '47.4 cm', weight: '2622 g',  fruit: 'Quả dưa' },
+  37: { lengthLabel: 'Chiều dài', length: '48.6 cm', weight: '2859 g',  fruit: 'Quả dưa lớn' },
+  38: { lengthLabel: 'Chiều dài', length: '49.8 cm', weight: '3083 g',  fruit: 'Dưa hấu nhỏ' },
+  39: { lengthLabel: 'Chiều dài', length: '50.7 cm', weight: '3288 g',  fruit: 'Dưa hấu' },
+  40: { lengthLabel: 'Chiều dài', length: '51.2 cm', weight: '3462 g',  fruit: 'Dưa hấu đủ tháng' },
+  41: { lengthLabel: 'Chiều dài', length: '51.7 cm', weight: '3597 g',  fruit: 'Dưa hấu đủ tháng' },
+  42: { lengthLabel: 'Chiều dài', length: '51.7 cm', weight: '3685 g',  fruit: 'Dưa hấu đủ tháng' },
+};
 
-  return {
-    fruit: 'Em bé đủ tháng',
-    length: `${length.toFixed(1)} cm`,
-    weight: `${Math.round(weight)} g`,
-  };
+function estimateFetalSize(week: number): FetalSizeEntry {
+  if (FETAL_SIZE_TABLE[week]) return FETAL_SIZE_TABLE[week];
+  if (week <= 3) return { lengthLabel: 'CRL', length: '< 0.4 cm', weight: '< 1 g', fruit: 'Hạt vừng' };
+  const nearest = Object.keys(FETAL_SIZE_TABLE)
+    .map(Number)
+    .reduce((a, b) => (Math.abs(b - week) < Math.abs(a - week) ? b : a));
+  return FETAL_SIZE_TABLE[nearest];
 }
 
 function WeekSelector({
@@ -481,7 +488,7 @@ function PregnancyDevelopmentTab({
           </View>
           <View className="mt-6 flex-row border-t border-brand-gray pt-4">
             <View className="flex-1 items-center">
-              <Text className="text-xs font-semibold text-brand-navy/50">Chiều dài (CRL)</Text>
+              <Text className="text-xs font-semibold text-brand-navy/50">{fetalSize.lengthLabel}</Text>
               <Text className="mt-1 text-sm font-bold text-brand-navy">{fetalSize.length}</Text>
             </View>
             <View className="w-px bg-brand-gray" />
@@ -670,115 +677,66 @@ function hrStatusLabel(bpm: number): string {
   return 'Bình thường';
 }
 
-function getMotherWeekInfo(week: number) {
-  if (week <= 12) {
-    return {
-      focus: 'Ổn định giai đoạn đầu thai kỳ',
-      nutrition: 'Ưu tiên axit folic, sắt và các bữa nhỏ dễ tiêu để giảm buồn nôn.',
-      body: 'Mẹ có thể mệt hơn, buồn nôn, căng tức ngực hoặc nhạy cảm với mùi.',
-      advice: 'Nghỉ ngơi nhiều hơn, uống đủ nước và trao đổi với bác sĩ nếu nghén nặng.',
-      sleep: 'Ngủ sớm, chia nhỏ thời gian nghỉ trong ngày để cơ thể hồi phục.',
-      warning: 'Ra máu, đau bụng dữ dội hoặc chóng mặt nhiều cần được thăm khám sớm.',
-    };
-  }
 
-  if (week <= 27) {
-    return {
-      focus: 'Duy trì năng lượng cho tam cá nguyệt thứ 2',
-      nutrition: 'Tăng cường đạm, canxi, sắt và rau xanh để hỗ trợ bé phát triển nhanh.',
-      body: 'Bụng rõ hơn, mẹ có thể thấy đau lưng nhẹ, căng da và bắt đầu cảm nhận thai máy.',
-      advice: 'Vận động nhẹ, theo dõi cân nặng đều và chuẩn bị lịch khám đúng hẹn.',
-      sleep: 'Nằm nghiêng bên trái và kê gối đỡ bụng để dễ chịu hơn khi ngủ.',
-      warning: 'Thai máy giảm rõ, đau đầu nhiều, phù nhanh hoặc đau bụng bất thường cần lưu ý.',
-    };
-  }
-
-  if (week <= 36) {
-    return {
-      focus: 'Chuẩn bị cho giai đoạn cuối thai kỳ',
-      nutrition: 'Chia nhỏ bữa ăn, bổ sung canxi và uống đủ nước để hạn chế chuột rút.',
-      body: 'Mẹ có thể nặng nề hơn, khó ngủ, đau lưng, phù nhẹ và đi tiểu thường xuyên.',
-      advice: 'Chuẩn bị đồ đi sinh, theo dõi cơn gò và duy trì khám thai định kỳ.',
-      sleep: 'Nghỉ nhiều hơn, kê cao chân khi phù và tránh nằm ngửa lâu.',
-      warning: 'Cơn gò đều, ra nước âm đạo, ra máu hoặc đau đầu kèm nhìn mờ cần đi khám.',
-    };
-  }
-
-  return {
-    focus: 'Theo dõi sát ngày dự sinh',
-    nutrition: 'Ăn nhẹ, dễ tiêu, uống đủ nước và chuẩn bị năng lượng cho chuyển dạ.',
-    body: 'Mẹ có thể thấy bụng tụt, cơn gò Braxton Hicks rõ hơn và áp lực vùng chậu tăng.',
-    advice: 'Theo dõi dấu hiệu chuyển dạ, giữ điện thoại và giấy tờ khám thai sẵn sàng.',
-    sleep: 'Nghỉ khi có thể, ưu tiên tư thế thoải mái và nhờ người thân hỗ trợ.',
-    warning: 'Ra nước ối, ra máu, thai máy giảm hoặc cơn gò đều tăng dần cần đến cơ sở y tế.',
-  };
+function MotherDayRow({ entry, isToday }: { entry: MotherDayEntry; isToday: boolean }) {
+  return (
+    <View
+      className={`flex-row items-start border-b border-brand-gray py-3 last:border-b-0 ${
+        isToday ? '-mx-4 rounded-input bg-brand-pink-50 px-4' : ''
+      }`}
+    >
+      <View
+        className={`mr-3 mt-0.5 min-w-[52px] items-center justify-center rounded-full px-2 py-1 ${
+          isToday ? 'bg-brand-pink-500' : 'bg-brand-peach'
+        }`}
+      >
+        <Text
+          className={`text-[10px] font-bold ${isToday ? 'text-white' : 'text-brand-navy/60'}`}
+        >
+          {isToday ? 'Hôm nay' : `Ngày ${entry.dayInWeek + 1}`}
+        </Text>
+      </View>
+      <Text className="flex-1 text-xs font-semibold leading-5 text-brand-navy/70">
+        {entry.content}
+      </Text>
+    </View>
+  );
 }
 
 function PregnancyKnowledgeTabWithWeeks({
+  currentWeek,
+  currentDayInWeek,
   selectedWeek,
   onSelectWeek,
 }: {
+  currentWeek: number;
+  currentDayInWeek: number;
   selectedWeek: number;
   onSelectWeek: (week: number) => void;
 }) {
-  const weekInfo = getMotherWeekInfo(selectedWeek);
+  const weekData = MOTHER_CHANGES[selectedWeek];
+  const isViewingCurrentWeek = selectedWeek === currentWeek;
 
   return (
     <View>
       <WeekSelector selectedWeek={selectedWeek} onSelectWeek={onSelectWeek} />
       <View className="px-5">
-        <Text className="mb-4 text-base font-bold text-brand-navy">
-          Mẹ cần biết trong tuần {selectedWeek}
+        <Text className="mb-3 text-lg font-bold text-brand-navy">
+          {weekData ? `${weekData.emoji} ${weekData.title}` : `Tuần ${selectedWeek}`}
         </Text>
-        <Card className="mb-4 border-[#FFD9B8] bg-[#FFF7EA]" padding="lg">
-          <View className="flex-row items-center">
-            <View className="flex-1 pr-3">
-              <Text className="text-sm font-bold text-[#B56A24]">{weekInfo.focus}</Text>
-              <Text className="mt-2 text-xs font-semibold leading-5 text-[#8D5A22]">
-                {weekInfo.nutrition}
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push('/(tabs)/knowledge')}
-                className="mt-4 self-start"
-              >
-                <Text className="text-xs font-bold text-brand-pink-600">Xem chi tiết ›</Text>
-              </TouchableOpacity>
-            </View>
-            <View className="h-20 w-24 items-center justify-center rounded-card bg-white">
-              <Text style={{ fontSize: 42 }}>🥗</Text>
-            </View>
-          </View>
+        <Card padding="lg">
+          {weekData ? (
+            weekData.days.map((entry) => (
+              <MotherDayRow
+                key={entry.key}
+                entry={entry}
+                isToday={isViewingCurrentWeek && entry.dayInWeek === currentDayInWeek}
+              />
+            ))
+          ) : (
+            <Text className="text-sm text-brand-navy/50">Chưa có dữ liệu cho tuần này.</Text>
+          )}
         </Card>
-        <KnowledgeRow
-          icon="human-pregnant"
-          title="Những thay đổi của cơ thể mẹ"
-          body={weekInfo.body}
-          color="#FF6D91"
-        />
-        <KnowledgeRow
-          icon="account-heart-outline"
-          title="Lời khuyên từ chuyên gia"
-          body={weekInfo.advice}
-          color="#8C5CFF"
-        />
-        <KnowledgeRow
-          icon="weather-night"
-          title="Giấc ngủ & tinh thần"
-          body={weekInfo.sleep}
-          color="#8C5CFF"
-        />
-        <KnowledgeRow
-          icon="alert-outline"
-          title="Dấu hiệu cần lưu ý"
-          body={weekInfo.warning}
-          color="#FF4F7B"
-        />
-        <KnowledgeRow
-          icon="help-circle-outline"
-          title="Câu hỏi thường gặp"
-          body="Giải đáp các thắc mắc phổ biến từ mẹ bầu."
-          color="#4FA8FF"
-        />
       </View>
     </View>
   );
@@ -877,6 +835,18 @@ export default function PregnancyTab() {
   })();
   const daysLeft = pregnancy.daysUntilDue != null ? Math.max(pregnancy.daysUntilDue, 0) : null;
 
+  const todayDayInWeek = currentDayInWeek + 1; // data uses 1-indexed dayInWeek
+  const fetalWeekData = FETAL_DEVELOPMENT[currentWeek];
+  const todayFetalEntry =
+    fetalWeekData?.days.find((d) => d.dayInWeek === todayDayInWeek) ??
+    fetalWeekData?.days[0] ??
+    null;
+  const motherWeekData = MOTHER_CHANGES[currentWeek];
+  const todayMotherEntry =
+    motherWeekData?.days.find((d) => d.dayInWeek === todayDayInWeek) ??
+    motherWeekData?.days[0] ??
+    null;
+
   const latestBP = bpVitals[0] ?? null;
   const latestBS = bsVitals[0] ?? null;
   const latestHR = hrVitals[0] ?? null;
@@ -962,25 +932,34 @@ export default function PregnancyTab() {
               </View>
             </View>
 
-            <Card className="mb-4 border-brand-pink-100 bg-brand-pink-50" padding="lg">
-              <View className="flex-row items-center">
-                <View className="flex-1 pr-4">
-                  <Text className="text-base font-bold text-brand-navy">Sự phát triển của bé</Text>
-                  <Text className="mt-4 text-sm font-bold leading-5 text-brand-navy">
-                    Thai nhi đang phát triển nhanh chóng.
-                  </Text>
-                  <Text className="mt-2 text-sm font-semibold leading-5 text-brand-navy/70">
-                    Bé có thể đã nghe được âm thanh và cảm nhận được ánh sáng.
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => router.push('/(tabs)/knowledge')}
-                    className="mt-5 self-start rounded-input bg-brand-pink-100 px-4 py-2"
-                  >
-                    <Text className="text-xs font-bold text-brand-pink-600">Xem chi tiết</Text>
-                  </TouchableOpacity>
-                </View>
-                <PregnancyIllustration compact />
+            <Card className="mb-4" padding="lg">
+              {/* Bé hôm nay */}
+              <View className="mb-2 flex-row items-center gap-x-2">
+                <Text style={{ fontSize: 20 }}>👶</Text>
+                <Text className="text-base font-bold text-brand-navy">Bé hôm nay</Text>
               </View>
+              <Text className="mb-4 text-sm leading-5 text-brand-navy/70">
+                {todayFetalEntry?.content ?? 'Chưa có dữ liệu cho tuần này.'}
+              </Text>
+
+              {/* Divider */}
+              <View className="mb-4 h-px bg-brand-gray" />
+
+              {/* Mẹ hôm nay */}
+              <View className="mb-2 flex-row items-center gap-x-2">
+                <Text style={{ fontSize: 20 }}>👩</Text>
+                <Text className="text-base font-bold text-brand-navy">Mẹ hôm nay</Text>
+              </View>
+              <Text className="mb-4 text-sm leading-5 text-brand-navy/70">
+                {todayMotherEntry?.content ?? 'Chưa có dữ liệu cho tuần này.'}
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => setActiveSection('development')}
+                className="self-start rounded-input bg-brand-pink-100 px-4 py-2"
+              >
+                <Text className="text-xs font-bold text-brand-pink-600">Xem chi tiết ›</Text>
+              </TouchableOpacity>
             </Card>
 
             <Card className="mb-4" padding="lg">
@@ -1177,7 +1156,7 @@ export default function PregnancyTab() {
         ) : activeSection === 'development' ? (
           <PregnancyDevelopmentTab currentWeek={currentWeek} weekDetail={weekDetail} currentDayInWeek={currentDayInWeek} selectedWeek={effectiveWeek} onSelectWeek={setSelectedWeek} />
         ) : (
-          <PregnancyKnowledgeTabWithWeeks selectedWeek={effectiveWeek} onSelectWeek={setSelectedWeek} />
+          <PregnancyKnowledgeTabWithWeeks currentWeek={currentWeek} currentDayInWeek={currentDayInWeek} selectedWeek={effectiveWeek} onSelectWeek={setSelectedWeek} />
         )}
       </ScrollView>
     </SafeAreaView>
