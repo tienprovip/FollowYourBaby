@@ -414,6 +414,56 @@ export interface Database {
       };
 
       // -----------------------------------------------------------------------
+      // pregnancy_journal_entries
+      // -----------------------------------------------------------------------
+      pregnancy_journal_entries: {
+        Row: {
+          id: string;
+          pregnancy_id: string;
+          owner_id: string;
+          recorded_at: string;
+          title: string | null;
+          content: string;
+          mood: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          pregnancy_id: string;
+          owner_id: string;
+          recorded_at?: string;
+          title?: string | null;
+          content: string;
+          mood?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          pregnancy_id?: string;
+          owner_id?: string;
+          recorded_at?: string;
+          title?: string | null;
+          content?: string;
+          mood?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'pregnancy_journal_entries_pregnancy_id_fkey';
+            columns: ['pregnancy_id'];
+            referencedRelation: 'pregnancies';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'pregnancy_journal_entries_owner_id_fkey';
+            columns: ['owner_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+
+      // -----------------------------------------------------------------------
       // pregnancy_symptoms
       // -----------------------------------------------------------------------
       pregnancy_symptoms: {
@@ -476,6 +526,8 @@ export interface Database {
           location: string | null;
           notes: string | null;
           document_url: string | null;
+          doctor_name: string | null;
+          next_visit_date: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -488,6 +540,8 @@ export interface Database {
           location?: string | null;
           notes?: string | null;
           document_url?: string | null;
+          doctor_name?: string | null;
+          next_visit_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -500,6 +554,8 @@ export interface Database {
           location?: string | null;
           notes?: string | null;
           document_url?: string | null;
+          doctor_name?: string | null;
+          next_visit_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };

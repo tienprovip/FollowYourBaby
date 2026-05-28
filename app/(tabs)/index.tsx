@@ -604,7 +604,7 @@ export default function HomeScreen() {
                   label="Kết quả khám"
                   color="#4F6CE8"
                   background="#EEF3FF"
-                  onPress={() => router.push('/(tabs)/profile')}
+                  onPress={() => router.push({ pathname: '/(maternal)/prenatal-visits', params: { tab: 'results' } } as never)}
                 />
                 <QuickTool
                   family="material"
@@ -620,7 +620,7 @@ export default function HomeScreen() {
                   label="Nhật ký thai kỳ"
                   color="#7C5CDB"
                   background="#F4F0FF"
-                  onPress={() => router.push('/(tabs)/pregnancy')}
+                  onPress={() => router.push('/(maternal)/journal' as never)}
                 />
               </View>
             </SectionShell>

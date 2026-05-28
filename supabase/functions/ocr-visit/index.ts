@@ -28,6 +28,7 @@ interface OcrBody {
 
 interface Extracted {
   visit_date: string | null;
+  facility_name: string | null;
   doctor_name: string | null;
   weight_kg: number | null;
   blood_pressure: string | null;
@@ -40,6 +41,7 @@ interface Extracted {
 function emptyExtracted(): Extracted {
   return {
     visit_date: null,
+    facility_name: null,
     doctor_name: null,
     weight_kg: null,
     blood_pressure: null,
@@ -106,6 +108,7 @@ serve(async (req) => {
       } else {
         extracted = {
           visit_date: typeof parsed.visit_date === 'string' ? parsed.visit_date : null,
+          facility_name: typeof parsed.facility_name === 'string' ? parsed.facility_name : null,
           doctor_name: typeof parsed.doctor_name === 'string' ? parsed.doctor_name : null,
           weight_kg: typeof parsed.weight_kg === 'number' ? parsed.weight_kg : null,
           blood_pressure: typeof parsed.blood_pressure === 'string' ? parsed.blood_pressure : null,

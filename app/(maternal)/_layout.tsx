@@ -29,6 +29,7 @@ export default function MaternalLayout() {
       <Stack.Screen name="height" options={{ title: 'Chiều cao' }} />
       <Stack.Screen name="medications" options={{ title: 'Thuốc & Vitamin' }} />
       <Stack.Screen name="prenatal-visits" options={{ title: 'Lịch khám thai' }} />
+      <Stack.Screen name="journal" options={{ title: 'Nhật ký thai kỳ' }} />
     </Stack>
   );
 }

@@ -72,6 +72,7 @@ QUY TẮC:
 3. Trả về JSON thuần (không bọc trong text) theo schema:
 {
   "visit_date": "YYYY-MM-DD hoặc null",
+  "facility_name": "tên phòng khám / bệnh viện hoặc null",
   "doctor_name": "string hoặc null",
   "weight_kg": "number hoặc null",
   "blood_pressure": "ví dụ 120/80 hoặc null",

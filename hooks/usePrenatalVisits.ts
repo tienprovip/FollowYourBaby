@@ -33,7 +33,7 @@ export function usePrenatalVisits(pregnancyId: string | null) {
 
   const addMutation = useMutation({
     mutationFn: async (
-      input: Pick<VisitInsert, 'scheduled_at' | 'type' | 'location' | 'notes' | 'document_url'>,
+      input: Pick<VisitInsert, 'scheduled_at' | 'type' | 'location' | 'notes' | 'document_url' | 'doctor_name' | 'next_visit_date'>,
     ) => {
       const { data, error } = await supabase
         .from('prenatal_visits')
@@ -45,6 +45,8 @@ export function usePrenatalVisits(pregnancyId: string | null) {
           location: input.location ?? null,
           notes: input.notes ?? null,
           document_url: input.document_url ?? null,
+          doctor_name: input.doctor_name ?? null,
+          next_visit_date: input.next_visit_date ?? null,
         })
         .select()
         .single();
